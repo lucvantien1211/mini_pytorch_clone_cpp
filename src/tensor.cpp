@@ -19,8 +19,8 @@ Tensor::Tensor(const std::vector<size_t>& shape) {
 }
 
 size_t Tensor::numel() const {
-    int n_element = 1;
-    for (int dim : this->shape_) {
+    size_t n_element = 1;
+    for (size_t dim : this->shape_) {
         n_element *= dim;
     }
     return n_element;

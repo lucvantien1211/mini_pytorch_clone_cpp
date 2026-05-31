@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <stdexcept>
+#include <vector>
 
 #include "mini_torch/tensor.h"
 
@@ -25,7 +26,7 @@ TEST(TensorTest, TensorIsZeroInitialized) {
     }
 }
 
-TEST(TensorTest, MutableAtAllowsModification) {
+TEST(TensorTest, MutableLinearIndexingAllowsModification) {
     mt::Tensor t({2, 3});
 
     t.at(0) = 5.0f;
@@ -35,7 +36,7 @@ TEST(TensorTest, MutableAtAllowsModification) {
     EXPECT_FLOAT_EQ(t.at(1), 10.0f);
 }
 
-TEST(TensorTest, ConstAtAllowsReadOnlyAccess) {
+TEST(TensorTest, ConstLinearIndexingAllowsReadOnlyAccess) {
     mt::Tensor t({2, 3});
 
     t.at(0) = 7.0f;
@@ -45,8 +46,73 @@ TEST(TensorTest, ConstAtAllowsReadOnlyAccess) {
     EXPECT_FLOAT_EQ(ct.at(0), 7.0f);
 }
 
-TEST(TensorTest, AtThrowsWhenIndexOutOfRange) {
+TEST(TensorTest, LinearAtThrowsWhenIndexOutOfRange) {
     mt::Tensor t({2, 3});
 
     EXPECT_THROW(t.at(100), std::out_of_range);
+}
+
+TEST(TensorTest, StrideIsComputedCorrectly) {
+    mt::Tensor t({2, 3, 4});
+
+    const auto& stride = t.get_stride();
+
+    EXPECT_EQ(stride.size(), 3);
+
+    EXPECT_EQ(stride[0], 12);
+    EXPECT_EQ(stride[1], 4);
+    EXPECT_EQ(stride[2], 1);
+}
+
+TEST(TensorTest, LinearIndexIsComputedCorrectly) {
+    mt::Tensor t({2, 3});
+
+    EXPECT_EQ(t.get_linear_index({0, 0}), 0);
+    EXPECT_EQ(t.get_linear_index({0, 1}), 1);
+    EXPECT_EQ(t.get_linear_index({0, 2}), 2);
+
+    EXPECT_EQ(t.get_linear_index({1, 0}), 3);
+    EXPECT_EQ(t.get_linear_index({1, 1}), 4);
+    EXPECT_EQ(t.get_linear_index({1, 2}), 5);
+}
+
+TEST(TensorTest, MultiDimensionalIndexingReadsCorrectValues) {
+    mt::Tensor t({2, 3});
+
+    for (size_t i = 0; i < t.numel(); i++) {
+        t.at(i) = static_cast<float>(i + 1);
+    }
+
+    EXPECT_FLOAT_EQ(t.at({0, 0}), 1.0f);
+    EXPECT_FLOAT_EQ(t.at({0, 1}), 2.0f);
+    EXPECT_FLOAT_EQ(t.at({0, 2}), 3.0f);
+
+    EXPECT_FLOAT_EQ(t.at({1, 0}), 4.0f);
+    EXPECT_FLOAT_EQ(t.at({1, 1}), 5.0f);
+    EXPECT_FLOAT_EQ(t.at({1, 2}), 6.0f);
+}
+
+TEST(TensorTest, MultiDimensionalIndexingAllowsModification) {
+    mt::Tensor t({2, 3});
+
+    t.at({1, 2}) = 99.0f;
+
+    EXPECT_FLOAT_EQ(t.at({1, 2}), 99.0f);
+    EXPECT_FLOAT_EQ(t.at(5), 99.0f);
+}
+
+TEST(TensorTest, MultiDimensionalIndexingThrowsForWrongNumberOfIndices) {
+    mt::Tensor t({2, 3});
+
+    EXPECT_THROW(t.get_linear_index({1}), std::invalid_argument);
+
+    EXPECT_THROW(t.get_linear_index({1, 2, 3}), std::invalid_argument);
+}
+
+TEST(TensorTest, MultiDimensionalIndexingThrowsForOutOfRangeIndices) {
+    mt::Tensor t({2, 3});
+
+    EXPECT_THROW(t.get_linear_index({2, 0}), std::out_of_range);
+
+    EXPECT_THROW(t.get_linear_index({0, 3}), std::out_of_range);
 }

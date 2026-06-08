@@ -25,5 +25,8 @@ class Tensor {
     float& at(const std::vector<size_t>& indices);
     const std::vector<size_t>& shape() const;
     void print() const;
+
+    mt::Tensor reshape(const std::vector<size_t>& shape) const;
+    mt::Tensor flatten() const;
 };
 }  // namespace mt

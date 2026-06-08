@@ -91,5 +91,50 @@ int main() {
         std::cout << "Caught exception: " << e.what() << '\n';
     }
 
+    // =====================
+    // Reshape
+    // =====================
+    mt::Tensor r = t.reshape({3, 2});
+
+    std::cout << "Reshaped tensor with new shape = {3, 2}:" << "\n";
+    r.print();
+    std::cout << "\n";
+
+    std::cout << "Shape: [";
+
+    print_vector(r.shape());
+
+    std::cout << "]\n";
+
+    std::cout << "Numel: " << r.numel() << "\n\n";
+
+    // =====================
+    // Reshape Exception demo
+    // =====================
+    try {
+        std::cout << "Trying reshape with invalid shape of {4, 2}\n";
+
+        mt::Tensor fail_r = t.reshape({4, 2});
+    } catch (const std::exception& e) {
+        std::cout << "Caught exception: " << e.what() << '\n';
+    }
+
+    // =====================
+    // Flatten
+    // =====================
+    mt::Tensor f = t.flatten();
+
+    std::cout << "Flattened Tensor:" << "\n";
+    f.print();
+    std::cout << "\n";
+
+    std::cout << "Shape: [";
+
+    print_vector(f.shape());
+
+    std::cout << "]\n";
+
+    std::cout << "Numel: " << f.numel() << "\n\n";
+
     return 0;
 }

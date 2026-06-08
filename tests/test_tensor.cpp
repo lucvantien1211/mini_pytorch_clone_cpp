@@ -116,3 +116,64 @@ TEST(TensorTest, MultiDimensionalIndexingAllowsModification) {
 
 //     EXPECT_THROW(t.get_linear_index({0, 3}), std::out_of_range);
 // }
+
+TEST(TensorTest, ReshapeChangesShape) {
+    mt::Tensor t({2, 3});
+
+    mt::Tensor r = t.reshape({3, 2});
+
+    EXPECT_EQ(r.shape()[0], 3);
+    EXPECT_EQ(r.shape()[1], 2);
+}
+
+TEST(TensorTest, ReshapeDoesNotModifyOriginalTensor) {
+    mt::Tensor t({2, 3});
+
+    mt::Tensor r = t.reshape({3, 2});
+
+    EXPECT_EQ(t.shape()[0], 2);
+    EXPECT_EQ(t.shape()[1], 3);
+}
+
+TEST(TensorTest, ReshapePreservesData) {
+    mt::Tensor t({2, 3});
+
+    for (size_t i = 0; i < 6; ++i) {
+        t.at(i) = static_cast<float>(i);
+    }
+
+    mt::Tensor r = t.reshape({3, 2});
+
+    for (size_t i = 0; i < 6; ++i) {
+        EXPECT_FLOAT_EQ(r.at(i), static_cast<float>(i));
+    }
+}
+
+TEST(TensorTest, ReshapeThrowsOnInvalidShape) {
+    mt::Tensor t({2, 3});
+
+    EXPECT_THROW(t.reshape({4, 2}), std::invalid_argument);
+}
+
+TEST(TensorTest, FlattenProducesOneDimensionalTensor) {
+    mt::Tensor t({2, 3, 4});
+
+    mt::Tensor f = t.flatten();
+
+    EXPECT_EQ(f.shape().size(), 1);
+    EXPECT_EQ(f.shape()[0], 24);
+}
+
+TEST(TensorTest, FlattenPreservesData) {
+    mt::Tensor t({2, 3});
+
+    for (size_t i = 0; i < 6; i++) {
+        t.at(i) = static_cast<float>(i);
+    }
+
+    mt::Tensor f = t.flatten();
+
+    for (size_t i = 0; i < 6; i++) {
+        EXPECT_FLOAT_EQ(f.at(i), static_cast<float>(i));
+    }
+}

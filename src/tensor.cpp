@@ -96,4 +96,23 @@ void Tensor::print() const {
     std::cout << ")";
 }
 
+mt::Tensor Tensor::reshape(const std::vector<size_t>& shape) const {
+    mt::Tensor new_tensor = mt::Tensor(shape);
+
+    if (new_tensor.numel() != this->numel()) {
+        throw std::invalid_argument("Cannot reshape tensor: number of elements mismatch");
+    }
+
+    for (size_t i = 0; i < this->numel(); i++) {
+        new_tensor.at(i) = this->at(i);
+    }
+
+    return new_tensor;
+}
+
+mt::Tensor Tensor::flatten() const {
+    mt::Tensor flattened_tensor = this->reshape({this->numel()});
+    return flattened_tensor;
+}
+
 }  // namespace mt

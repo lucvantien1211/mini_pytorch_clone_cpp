@@ -39,13 +39,13 @@ int main() {
     // =====================
     // Strides
     // =====================
-    std::cout << "Stride: [";
+    // std::cout << "Stride: [";
 
-    const auto& stride = t.get_stride();
+    // const auto& stride = t.get_stride();
 
-    print_vector(stride);
+    // print_vector(stride);
 
-    std::cout << "]\n\n";
+    // std::cout << "]\n\n";
 
     // =====================
     // Multi-dimensional indexing
@@ -72,13 +72,13 @@ int main() {
     // =====================
     // Linear index mapping demo
     // =====================
-    std::cout << "Linear index mapping:\n";
+    // std::cout << "Linear index mapping:\n";
 
-    std::cout << "{0,0} -> " << t.get_linear_index({0, 0}) << '\n';
+    // std::cout << "{0,0} -> " << t.get_linear_index({0, 0}) << '\n';
 
-    std::cout << "{1,2} -> " << t.get_linear_index({1, 2}) << '\n';
+    // std::cout << "{1,2} -> " << t.get_linear_index({1, 2}) << '\n';
 
-    std::cout << "\n";
+    // std::cout << "\n";
 
     // =====================
     // Exception demo

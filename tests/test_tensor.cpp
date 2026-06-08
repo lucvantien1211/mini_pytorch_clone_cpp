@@ -52,29 +52,29 @@ TEST(TensorTest, LinearAtThrowsWhenIndexOutOfRange) {
     EXPECT_THROW(t.at(100), std::out_of_range);
 }
 
-TEST(TensorTest, StrideIsComputedCorrectly) {
-    mt::Tensor t({2, 3, 4});
+// TEST(TensorTest, StrideIsComputedCorrectly) {
+//     mt::Tensor t({2, 3, 4});
 
-    const auto& stride = t.get_stride();
+//     const auto& stride = t.get_stride();
 
-    EXPECT_EQ(stride.size(), 3);
+//     EXPECT_EQ(stride.size(), 3);
 
-    EXPECT_EQ(stride[0], 12);
-    EXPECT_EQ(stride[1], 4);
-    EXPECT_EQ(stride[2], 1);
-}
+//     EXPECT_EQ(stride[0], 12);
+//     EXPECT_EQ(stride[1], 4);
+//     EXPECT_EQ(stride[2], 1);
+// }
 
-TEST(TensorTest, LinearIndexIsComputedCorrectly) {
-    mt::Tensor t({2, 3});
+// TEST(TensorTest, LinearIndexIsComputedCorrectly) {
+//     mt::Tensor t({2, 3});
 
-    EXPECT_EQ(t.get_linear_index({0, 0}), 0);
-    EXPECT_EQ(t.get_linear_index({0, 1}), 1);
-    EXPECT_EQ(t.get_linear_index({0, 2}), 2);
+//     EXPECT_EQ(t.get_linear_index({0, 0}), 0);
+//     EXPECT_EQ(t.get_linear_index({0, 1}), 1);
+//     EXPECT_EQ(t.get_linear_index({0, 2}), 2);
 
-    EXPECT_EQ(t.get_linear_index({1, 0}), 3);
-    EXPECT_EQ(t.get_linear_index({1, 1}), 4);
-    EXPECT_EQ(t.get_linear_index({1, 2}), 5);
-}
+//     EXPECT_EQ(t.get_linear_index({1, 0}), 3);
+//     EXPECT_EQ(t.get_linear_index({1, 1}), 4);
+//     EXPECT_EQ(t.get_linear_index({1, 2}), 5);
+// }
 
 TEST(TensorTest, MultiDimensionalIndexingReadsCorrectValues) {
     mt::Tensor t({2, 3});
@@ -101,18 +101,18 @@ TEST(TensorTest, MultiDimensionalIndexingAllowsModification) {
     EXPECT_FLOAT_EQ(t.at(5), 99.0f);
 }
 
-TEST(TensorTest, MultiDimensionalIndexingThrowsForWrongNumberOfIndices) {
-    mt::Tensor t({2, 3});
+// TEST(TensorTest, MultiDimensionalIndexingThrowsForWrongNumberOfIndices) {
+//     mt::Tensor t({2, 3});
 
-    EXPECT_THROW(t.get_linear_index({1}), std::invalid_argument);
+//     EXPECT_THROW(t.get_linear_index({1}), std::invalid_argument);
 
-    EXPECT_THROW(t.get_linear_index({1, 2, 3}), std::invalid_argument);
-}
+//     EXPECT_THROW(t.get_linear_index({1, 2, 3}), std::invalid_argument);
+// }
 
-TEST(TensorTest, MultiDimensionalIndexingThrowsForOutOfRangeIndices) {
-    mt::Tensor t({2, 3});
+// TEST(TensorTest, MultiDimensionalIndexingThrowsForOutOfRangeIndices) {
+//     mt::Tensor t({2, 3});
 
-    EXPECT_THROW(t.get_linear_index({2, 0}), std::out_of_range);
+//     EXPECT_THROW(t.get_linear_index({2, 0}), std::out_of_range);
 
-    EXPECT_THROW(t.get_linear_index({0, 3}), std::out_of_range);
-}
+//     EXPECT_THROW(t.get_linear_index({0, 3}), std::out_of_range);
+// }

@@ -96,8 +96,8 @@ void Tensor::print() const {
     std::cout << ")";
 }
 
-mt::Tensor Tensor::reshape(const std::vector<size_t>& shape) const {
-    mt::Tensor new_tensor = mt::Tensor(shape);
+Tensor Tensor::reshape(const std::vector<size_t>& shape) const {
+    Tensor new_tensor = Tensor(shape);
 
     if (new_tensor.numel() != this->numel()) {
         throw std::invalid_argument("Cannot reshape tensor: number of elements mismatch");
@@ -110,9 +110,134 @@ mt::Tensor Tensor::reshape(const std::vector<size_t>& shape) const {
     return new_tensor;
 }
 
-mt::Tensor Tensor::flatten() const {
-    mt::Tensor flattened_tensor = this->reshape({this->numel()});
+Tensor Tensor::flatten() const {
+    Tensor flattened_tensor = this->reshape({this->numel()});
     return flattened_tensor;
+}
+
+Tensor Tensor::operator+(const Tensor& tensor) const {
+    if (this->shape() != tensor.shape()) {
+        throw std::invalid_argument("Shape mismatch");
+    }
+
+    Tensor out(this->shape());
+    for (size_t i = 0; i < this->numel(); i++) {
+        out.at(i) = this->at(i) + tensor.at(i);
+    }
+
+    return out;
+}
+
+Tensor Tensor::operator-(const Tensor& tensor) const {
+    if (this->shape() != tensor.shape()) {
+        throw std::invalid_argument("Shape mismatch");
+    }
+
+    Tensor out(this->shape());
+    for (size_t i = 0; i < this->numel(); i++) {
+        out.at(i) = this->at(i) - tensor.at(i);
+    }
+
+    return out;
+}
+
+Tensor Tensor::operator*(const Tensor& tensor) const {
+    if (this->shape() != tensor.shape()) {
+        throw std::invalid_argument("Shape mismatch");
+    }
+
+    Tensor out(this->shape());
+    for (size_t i = 0; i < this->numel(); i++) {
+        out.at(i) = this->at(i) * tensor.at(i);
+    }
+
+    return out;
+}
+
+Tensor Tensor::operator/(const Tensor& tensor) const {
+    if (this->shape() != tensor.shape()) {
+        throw std::invalid_argument("Shape mismatch");
+    }
+
+    Tensor out(this->shape());
+    for (size_t i = 0; i < this->numel(); i++) {
+        if (tensor.at(i) == 0.0f) {
+            throw std::runtime_error("Cannot divide by 0");
+        }
+        out.at(i) = this->at(i) / tensor.at(i);
+    }
+
+    return out;
+}
+
+Tensor Tensor::operator+(float scalar) const {
+    Tensor out(this->shape());
+    for (size_t i = 0; i < this->numel(); i++) {
+        out.at(i) = this->at(i) + scalar;
+    }
+    return out;
+}
+
+Tensor Tensor::operator-(float scalar) const {
+    Tensor out(this->shape());
+    for (size_t i = 0; i < this->numel(); i++) {
+        out.at(i) = this->at(i) - scalar;
+    }
+    return out;
+}
+
+Tensor Tensor::operator*(float scalar) const {
+    Tensor out(this->shape());
+    for (size_t i = 0; i < this->numel(); i++) {
+        out.at(i) = this->at(i) * scalar;
+    }
+    return out;
+}
+
+Tensor Tensor::operator/(float scalar) const {
+    if (scalar == 0.0f) {
+        throw std::runtime_error("Cannot divide by 0");
+    }
+    Tensor out(this->shape());
+    for (size_t i = 0; i < this->numel(); i++) {
+        out.at(i) = this->at(i) / scalar;
+    }
+    return out;
+}
+
+Tensor operator+(float scalar, const Tensor& tensor) {
+    Tensor out(tensor.shape());
+    for (size_t i = 0; i < tensor.numel(); i++) {
+        out.at(i) = scalar + tensor.at(i);
+    }
+    return out;
+}
+
+Tensor operator-(float scalar, const Tensor& tensor) {
+    Tensor out(tensor.shape());
+    for (size_t i = 0; i < tensor.numel(); ++i) {
+        out.at(i) = scalar - tensor.at(i);
+    }
+    return out;
+}
+
+Tensor operator*(float scalar, const Tensor& tensor) {
+    Tensor out(tensor.shape());
+    for (size_t i = 0; i < tensor.numel(); i++) {
+        out.at(i) = scalar * tensor.at(i);
+    }
+    return out;
+}
+
+Tensor operator/(float scalar, const Tensor& tensor) {
+    Tensor out(tensor.shape());
+    for (size_t i = 0; i < tensor.numel(); i++) {
+        if (tensor.at(i) == 0.0f) {
+            throw std::runtime_error("Cannot divide by 0");
+        }
+        out.at(i) = scalar / tensor.at(i);
+    }
+    return out;
 }
 
 }  // namespace mt

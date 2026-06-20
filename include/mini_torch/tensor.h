@@ -26,7 +26,27 @@ class Tensor {
     const std::vector<size_t>& shape() const;
     void print() const;
 
-    mt::Tensor reshape(const std::vector<size_t>& shape) const;
-    mt::Tensor flatten() const;
+    Tensor reshape(const std::vector<size_t>& shape) const;
+    Tensor flatten() const;
+
+    // operators
+    // element-wise tensor operators
+    Tensor operator+(const Tensor& tensor) const;
+    Tensor operator-(const Tensor& tensor) const;
+    Tensor operator*(const Tensor& tensor) const;
+    Tensor operator/(const Tensor& tensor) const;
+
+    // tensor - scalar operators for: tensor + - * / scalar
+    Tensor operator+(float scalar) const;
+    Tensor operator-(float scalar) const;
+    Tensor operator*(float scalar) const;
+    Tensor operator/(float scalar) const;
 };
+
+// tensor - scalar operators for: scalar + - * / tensor
+Tensor operator+(float scalar, const Tensor& tensor);
+Tensor operator-(float scalar, const Tensor& tensor);
+Tensor operator*(float scalar, const Tensor& tensor);
+Tensor operator/(float scalar, const Tensor& tensor);
+
 }  // namespace mt

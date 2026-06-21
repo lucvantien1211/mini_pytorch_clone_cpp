@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <vector>
 
+#include "mini_torch/factory.h"
 #include "mini_torch/tensor.h"
 
 TEST(TensorTest, ConstructorStoresShapeCorrectly) {
@@ -77,11 +78,7 @@ TEST(TensorTest, LinearAtThrowsWhenIndexOutOfRange) {
 // }
 
 TEST(TensorTest, MultiDimensionalIndexingReadsCorrectValues) {
-    mt::Tensor t({2, 3});
-
-    for (size_t i = 0; i < t.numel(); i++) {
-        t.at(i) = static_cast<float>(i + 1);
-    }
+    mt::Tensor t = mt::arange(1.0f, 7.0f).reshape({2, 3});
 
     EXPECT_FLOAT_EQ(t.at({0, 0}), 1.0f);
     EXPECT_FLOAT_EQ(t.at({0, 1}), 2.0f);
@@ -117,6 +114,58 @@ TEST(TensorTest, MultiDimensionalIndexingAllowsModification) {
 //     EXPECT_THROW(t.get_linear_index({0, 3}), std::out_of_range);
 // }
 
+TEST(TensorTest, ZerosFactoryFunctionProducesCorrectResult) {
+    mt::Tensor t = mt::zeros({2, 3});
+
+    // shape
+    EXPECT_EQ(t.shape()[0], 2);
+    EXPECT_EQ(t.shape()[1], 3);
+
+    // value
+    for (size_t i = 0; i < t.numel(); i++) {
+        EXPECT_FLOAT_EQ(t.at(i), 0.0f);
+    }
+}
+
+TEST(TensorTest, OnesFactoryFunctionProducesCorrectResult) {
+    mt::Tensor t = mt::ones({2, 3});
+
+    // shape
+    EXPECT_EQ(t.shape()[0], 2);
+    EXPECT_EQ(t.shape()[1], 3);
+
+    // value
+    for (size_t i = 0; i < t.numel(); i++) {
+        EXPECT_FLOAT_EQ(t.at(i), 1.0f);
+    }
+}
+
+TEST(TensorTest, ArangeFactoryFunctionProducesCorrectResult) {
+    mt::Tensor t = mt::arange(0.0f, 6.0f);
+
+    // numel
+    EXPECT_EQ(t.numel(), 6);
+
+    // shape
+    EXPECT_EQ(t.shape().size(), 1);
+    EXPECT_EQ(t.shape()[0], 6);
+
+    // value
+    for (size_t i = 0; i < t.numel(); i++) {
+        EXPECT_FLOAT_EQ(t.at(i), static_cast<float>(i));
+    }
+}
+
+TEST(TensorTest, ArangeFactoryFunctionThrowsOnZeroStep) {
+    EXPECT_THROW(mt::arange(0.0f, 6.0f, 0.0f), std::invalid_argument);
+}
+
+TEST(TensorTest, ArangeFactoryFunctionReturnsEmptyTensor) {
+    mt::Tensor t = mt::arange(10.0f, 5.0f);
+
+    EXPECT_EQ(t.numel(), 0);
+}
+
 TEST(TensorTest, ReshapeChangesShape) {
     mt::Tensor t({2, 3});
 
@@ -136,11 +185,7 @@ TEST(TensorTest, ReshapeDoesNotModifyOriginalTensor) {
 }
 
 TEST(TensorTest, ReshapePreservesData) {
-    mt::Tensor t({2, 3});
-
-    for (size_t i = 0; i < 6; ++i) {
-        t.at(i) = static_cast<float>(i);
-    }
+    mt::Tensor t = mt::arange(0.0f, 6.0f).reshape({2, 3});
 
     mt::Tensor r = t.reshape({3, 2});
 
@@ -165,11 +210,7 @@ TEST(TensorTest, FlattenProducesOneDimensionalTensor) {
 }
 
 TEST(TensorTest, FlattenPreservesData) {
-    mt::Tensor t({2, 3});
-
-    for (size_t i = 0; i < 6; i++) {
-        t.at(i) = static_cast<float>(i);
-    }
+    mt::Tensor t = mt::arange(0.0f, 6.0f).reshape({2, 3});
 
     mt::Tensor f = t.flatten();
 
@@ -179,13 +220,8 @@ TEST(TensorTest, FlattenPreservesData) {
 }
 
 TEST(TensorTest, TensorAdditionProducesCorrectResult) {
-    mt::Tensor a({2, 3});
-    mt::Tensor b({2, 3});
-
-    for (size_t i = 0; i < 6; i++) {
-        a.at(i) = static_cast<float>(i + 1);
-        b.at(i) = static_cast<float>((i + 1) * 10);
-    }
+    mt::Tensor a = mt::arange(1.0f, 7.0f).reshape({2, 3});
+    mt::Tensor b = 10 * a;
 
     mt::Tensor c = a + b;
     mt::Tensor d = b + a;
@@ -234,13 +270,8 @@ TEST(TensorTest, TensorAdditionThrowsOnShapeMismatch) {
 }
 
 TEST(TensorTest, TensorSubtractionProducesCorrectResult) {
-    mt::Tensor a({2, 3});
-    mt::Tensor b({2, 3});
-
-    for (size_t i = 0; i < 6; i++) {
-        a.at(i) = static_cast<float>(i + 1);
-        b.at(i) = static_cast<float>((i + 1) * 10);
-    }
+    mt::Tensor a = mt::arange(1.0f, 7.0f).reshape({2, 3});
+    mt::Tensor b = 10 * a;
 
     mt::Tensor c = a - b;
     mt::Tensor d = b - a;
@@ -289,13 +320,8 @@ TEST(TensorTest, TensorSubtractionThrowsOnShapeMismatch) {
 }
 
 TEST(TensorTest, TensorProductionProducesCorrectResult) {
-    mt::Tensor a({2, 3});
-    mt::Tensor b({2, 3});
-
-    for (size_t i = 0; i < 6; i++) {
-        a.at(i) = static_cast<float>(i + 1);
-        b.at(i) = static_cast<float>((i + 1) * 10);
-    }
+    mt::Tensor a = mt::arange(1.0f, 7.0f).reshape({2, 3});
+    mt::Tensor b = 10 * a;
 
     mt::Tensor c = a * b;
     mt::Tensor d = b * a;
@@ -344,13 +370,8 @@ TEST(TensorTest, TensorProductionThrowsOnShapeMismatch) {
 }
 
 TEST(TensorTest, TensorDivisionProducesCorrectResult) {
-    mt::Tensor a({2, 3});
-    mt::Tensor b({2, 3});
-
-    for (size_t i = 0; i < 6; i++) {
-        a.at(i) = static_cast<float>(i + 1);
-        b.at(i) = static_cast<float>((i + 1) * 10);
-    }
+    mt::Tensor a = mt::arange(1.0f, 7.0f).reshape({2, 3});
+    mt::Tensor b = 10 * a;
 
     mt::Tensor c = b / a;
     mt::Tensor d = a / b;
@@ -378,16 +399,9 @@ TEST(TensorTest, TensorDivisionProducesCorrectResult) {
 }
 
 TEST(TensorTest, TensorDivisionDoesNotModifyInputs) {
-    mt::Tensor a({2, 3});
-    mt::Tensor b({2, 3});
-
-    a.at(0) = 1.0f;
+    mt::Tensor a = mt::ones({2, 3});
+    mt::Tensor b = mt::ones({2, 3});
     b.at(0) = 10.0f;
-
-    for (size_t i = 1; i < 6; i++) {
-        a.at(i) = 1.0f;
-        b.at(i) = 1.0f;
-    }
 
     mt::Tensor c = b / a;
 
@@ -414,12 +428,8 @@ TEST(TensorTest, TensorDivisionThrowsOnShapeMismatch) {
 }
 
 TEST(TensorTest, TensorScalarAdditionProducesCorrectResult) {
-    mt::Tensor a({2, 3});
+    mt::Tensor a = mt::arange(1.0f, 7.0f).reshape({2, 3});
     float b = 10.0f;
-
-    for (size_t i = 0; i < 6; i++) {
-        a.at(i) = static_cast<float>(i + 1);
-    }
 
     mt::Tensor c = a + b;
     mt::Tensor d = b + a;
@@ -460,12 +470,8 @@ TEST(TensorTest, TensorScalarAdditionDoesNotModifyInputs) {
 }
 
 TEST(TensorTest, TensorScalarSubtractionProducesCorrectResult) {
-    mt::Tensor a({2, 3});
+    mt::Tensor a = mt::arange(1.0f, 7.0f).reshape({2, 3});
     float b = 10.0f;
-
-    for (size_t i = 0; i < 6; i++) {
-        a.at(i) = static_cast<float>(i + 1);
-    }
 
     mt::Tensor c = a - b;
     mt::Tensor d = b - a;
@@ -506,12 +512,8 @@ TEST(TensorTest, TensorScalarSubtractionDoesNotModifyInputs) {
 }
 
 TEST(TensorTest, TensorScalarProductionProducesCorrectResult) {
-    mt::Tensor a({2, 3});
+    mt::Tensor a = mt::arange(1.0f, 7.0f).reshape({2, 3});
     float b = 10.0f;
-
-    for (size_t i = 0; i < 6; i++) {
-        a.at(i) = static_cast<float>(i + 1);
-    }
 
     mt::Tensor c = a * b;
     mt::Tensor d = b * a;
@@ -552,12 +554,8 @@ TEST(TensorTest, TensorScalarProductionDoesNotModifyInputs) {
 }
 
 TEST(TensorTest, TensorScalarDivisionProducesCorrectResult) {
-    mt::Tensor a({2, 3});
+    mt::Tensor a = mt::ones({2, 3});
     float b = 10.0f;
-
-    for (size_t i = 0; i < 6; i++) {
-        a.at(i) = 1.0f;
-    }
 
     mt::Tensor c = b / a;
     mt::Tensor d = a / b;
@@ -585,12 +583,8 @@ TEST(TensorTest, TensorScalarDivisionProducesCorrectResult) {
 }
 
 TEST(TensorTest, TensorScalarDivisionDoesNotModifyInputs) {
-    mt::Tensor a({2, 3});
+    mt::Tensor a = mt::ones({2, 3});
     float b = 10.0f;
-
-    for (size_t i = 0; i < 6; i++) {
-        a.at(i) = 1.0f;
-    }
 
     mt::Tensor c = b / a;
 

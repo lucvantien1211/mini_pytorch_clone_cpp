@@ -18,6 +18,7 @@ include_directories(include)
 # =========================================
 add_library(mini_torch STATIC
     src/tensor.cpp
+    src/factory.cpp
 )
 
 # =========================================

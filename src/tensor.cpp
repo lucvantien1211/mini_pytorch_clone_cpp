@@ -6,92 +6,105 @@
 
 namespace mt {
 
-Tensor::Tensor() {}
+TensorImpl::TensorImpl() : storage_(std::make_shared<Storage>()) {}
 
-Tensor::Tensor(const std::vector<size_t>& shape) {
+size_t TensorImpl::numel() const { return numel(shape_); }
+
+size_t TensorImpl::numel(const std::vector<size_t>& shape) {
+    size_t n_element;
     if (shape.empty()) {
-        throw std::invalid_argument("Tensor's shape can not be empty");
-    }
-    this->shape_ = shape;
-    this->stride_ = this->get_stride();
-    size_t n_element = this->numel();
-
-    this->data_.resize(n_element);
-    for (size_t i = 0; i < n_element; i++) {
-        this->data_[i] = 0;
-    }
-}
-
-std::vector<size_t> Tensor::get_stride() const {
-    std::vector<size_t> stride;
-    size_t n_dim = this->shape_.size();
-    stride.resize(n_dim);
-
-    stride[n_dim - 1] = 1;
-    for (size_t dim = n_dim - 1; dim > 0; --dim) {
-        stride[dim - 1] = this->shape_[dim] * stride[dim];
-    }
-
-    return stride;
-}
-
-size_t Tensor::numel() const {
-    size_t n_element = 1;
-    for (size_t dim : this->shape_) {
-        n_element *= dim;
+        n_element = 0;
+    } else {
+        n_element = 1;
+        for (size_t dim : shape) {
+            n_element *= dim;
+        }
     }
     return n_element;
 }
 
+std::vector<size_t> TensorImpl::compute_stride(const std::vector<size_t>& shape) {
+    std::vector<size_t> stride;
+    if (shape.empty()) {
+        stride = {};
+    } else {
+        size_t n_dim = shape.size();
+        stride.resize(n_dim);
+
+        stride[n_dim - 1] = 1;
+        for (size_t dim = n_dim - 1; dim > 0; --dim) {
+            stride[dim - 1] = shape[dim] * stride[dim];
+        }
+    }
+    return stride;
+}
+
+Tensor::Tensor() : impl_(std::make_shared<TensorImpl>()) {}
+
+Tensor::Tensor(const std::vector<size_t>& shape) : impl_(std::make_shared<TensorImpl>()) {
+    if (shape.empty()) {
+        throw std::invalid_argument("Tensor's shape can not be empty");
+    }
+    impl_->shape_ = shape;
+    impl_->stride_ = TensorImpl::compute_stride(shape);
+    impl_->numel_ = impl_->numel();
+
+    impl_->storage_->data_.resize(impl_->numel_, 0.0f);
+}
+
 size_t Tensor::get_linear_index(const std::vector<size_t>& indices) const {
-    if (indices.size() != this->stride_.size()) {
+    if (indices.size() != impl_->stride_.size()) {
         throw std::invalid_argument("Number of indices does not match number of dimension");
     }
 
     size_t linear_index = 0;
-    for (size_t dim = 0; dim < this->stride_.size(); dim++) {
-        if (indices[dim] >= this->shape_[dim]) {
+    for (size_t dim = 0; dim < impl_->stride_.size(); dim++) {
+        if (indices[dim] >= impl_->shape_[dim]) {
             throw std::out_of_range("Tensor index out of range");
         }
-        linear_index += this->stride_[dim] * indices[dim];
+        linear_index += impl_->stride_[dim] * indices[dim];
     }
 
     return linear_index;
 }
 
+size_t Tensor::numel() const { return impl_->numel_; }
+
+const std::vector<size_t>& Tensor::stride() const { return impl_->stride_; }
+
+const std::vector<size_t>& Tensor::shape() const { return impl_->shape_; }
+
 const float& Tensor::at(size_t idx) const {
-    if (idx >= this->data_.size()) {
+    if (idx >= impl_->numel_ - 1) {
         throw std::out_of_range("Tensor index out of range");
     }
-    return this->data_[idx];
+    return impl_->storage_->data_[idx];
 }
 
 const float& Tensor::at(const std::vector<size_t>& indices) const {
     size_t index = this->get_linear_index(indices);
-    return this->data_[index];
+    return impl_->storage_->data_[index];
 }
 
 float& Tensor::at(size_t idx) {
-    if (idx >= this->data_.size()) {
+    if (idx >= impl_->numel_ - 1) {
         throw std::out_of_range("Tensor index out of range");
     }
-    return this->data_[idx];
+    return impl_->storage_->data_[idx];
 }
 
 float& Tensor::at(const std::vector<size_t>& indices) {
     size_t index = this->get_linear_index(indices);
-    return this->data_[index];
+    return impl_->storage_->data_[index];
 }
-
-const std::vector<size_t>& Tensor::shape() const { return this->shape_; }
 
 void Tensor::print() const {
     std::cout << "Tensor(\n";
     std::cout << "    shape=[";
-    print_vector(this->shape_);
+    print_vector(impl_->shape_);
     std::cout << "],\n";
     std::cout << "    data=[";
-    print_vector(this->data_);
+    print_vector(impl_->storage_->data_);
     std::cout << "]\n";
     std::cout << ")";
 }

@@ -1,15 +1,35 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 namespace mt {
-class Tensor {
-   private:
+
+// Actual data storage for tensor
+class Storage {
+   public:
+    std::vector<float> data_;
+};
+
+// Tensor metadata
+class TensorImpl {
+   public:
+    std::shared_ptr<Storage> storage_;
     std::vector<size_t> shape_;
     std::vector<size_t> stride_;
-    std::vector<float> data_;
+    size_t numel_;
 
-    std::vector<size_t> get_stride() const;
+    TensorImpl();
+
+    size_t numel() const;
+    static size_t numel(const std::vector<size_t>& shape);
+    static std::vector<size_t> compute_stride(const std::vector<size_t>& shape);
+};
+
+class Tensor {
+   private:
+    std::shared_ptr<TensorImpl> impl_;
+
     size_t get_linear_index(const std::vector<size_t>& indices) const;
 
    public:
@@ -19,11 +39,12 @@ class Tensor {
 
     // methods
     size_t numel() const;
+    const std::vector<size_t>& stride() const;
+    const std::vector<size_t>& shape() const;
     const float& at(size_t idx) const;
     const float& at(const std::vector<size_t>& indices) const;
     float& at(size_t idx);
     float& at(const std::vector<size_t>& indices);
-    const std::vector<size_t>& shape() const;
     void print() const;
 
     Tensor reshape(const std::vector<size_t>& shape) const;

@@ -26,7 +26,7 @@ Tensor arange(float start, float end, float step = 1.0f) {
     size_t size = static_cast<size_t>(std::max(0.0, std::ceil(n - eps)));
 
     if (size == 0) {
-        return Tensor({0});
+        return Tensor();
     } else {
         Tensor out({size});
 

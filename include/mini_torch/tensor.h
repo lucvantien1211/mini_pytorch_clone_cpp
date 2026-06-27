@@ -36,6 +36,7 @@ class Tensor {
     // constructors
     Tensor();
     Tensor(const std::vector<size_t>& shape);
+    explicit Tensor(std::shared_ptr<TensorImpl> impl);
 
     // methods
     size_t numel() const;

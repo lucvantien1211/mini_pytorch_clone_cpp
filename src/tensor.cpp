@@ -39,7 +39,11 @@ std::vector<size_t> TensorImpl::compute_stride(const std::vector<size_t>& shape)
     return stride;
 }
 
-Tensor::Tensor() : impl_(std::make_shared<TensorImpl>()) {}
+Tensor::Tensor() : impl_(std::make_shared<TensorImpl>()) {
+    impl_->shape_ = {};
+    impl_->stride_ = TensorImpl::compute_stride(impl_->shape_);
+    impl_->numel_ = impl_->numel();
+}
 
 Tensor::Tensor(const std::vector<size_t>& shape) : impl_(std::make_shared<TensorImpl>()) {
     if (shape.empty()) {
@@ -51,6 +55,8 @@ Tensor::Tensor(const std::vector<size_t>& shape) : impl_(std::make_shared<Tensor
 
     impl_->storage_->data_.resize(impl_->numel_, 0.0f);
 }
+
+Tensor::Tensor(std::shared_ptr<TensorImpl> impl) : impl_(std::move(impl)) {}
 
 size_t Tensor::get_linear_index(const std::vector<size_t>& indices) const {
     if (indices.size() != impl_->stride_.size()) {
@@ -110,21 +116,24 @@ void Tensor::print() const {
 }
 
 Tensor Tensor::reshape(const std::vector<size_t>& shape) const {
-    Tensor new_tensor = Tensor(shape);
-
-    if (new_tensor.numel() != this->numel()) {
+    if (TensorImpl::numel(shape) != impl_->numel_)
         throw std::invalid_argument("Cannot reshape tensor: number of elements mismatch");
-    }
 
-    for (size_t i = 0; i < this->numel(); i++) {
-        new_tensor.at(i) = this->at(i);
-    }
+    auto new_impl = std::make_shared<TensorImpl>();
 
-    return new_tensor;
+    new_impl->storage_ = impl_->storage_;
+
+    new_impl->shape_ = shape;
+
+    new_impl->stride_ = TensorImpl::compute_stride(shape);
+
+    new_impl->numel_ = new_impl->numel();
+
+    return Tensor(new_impl);
 }
 
 Tensor Tensor::flatten() const {
-    Tensor flattened_tensor = this->reshape({this->numel()});
+    Tensor flattened_tensor = this->reshape({impl_->numel_});
     return flattened_tensor;
 }
 

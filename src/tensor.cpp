@@ -75,7 +75,7 @@ const std::vector<size_t>& Tensor::stride() const { return impl_->stride_; }
 const std::vector<size_t>& Tensor::shape() const { return impl_->shape_; }
 
 const float& Tensor::at(size_t idx) const {
-    if (idx >= impl_->numel_ - 1) {
+    if (idx >= impl_->numel_) {
         throw std::out_of_range("Tensor index out of range");
     }
     return impl_->storage_->data_[idx];
@@ -87,7 +87,7 @@ const float& Tensor::at(const std::vector<size_t>& indices) const {
 }
 
 float& Tensor::at(size_t idx) {
-    if (idx >= impl_->numel_ - 1) {
+    if (idx >= impl_->numel_) {
         throw std::out_of_range("Tensor index out of range");
     }
     return impl_->storage_->data_[idx];

@@ -3,29 +3,9 @@
 #include <memory>
 #include <vector>
 
+#include "mini_torch/tensor_impl.h"
+
 namespace mt {
-
-// Actual data storage for tensor
-class Storage {
-   public:
-    std::vector<float> data_;
-};
-
-// Tensor metadata
-class TensorImpl {
-   public:
-    std::shared_ptr<Storage> storage_;
-    std::vector<size_t> shape_;
-    std::vector<size_t> stride_;
-    size_t numel_;
-
-    TensorImpl();
-
-    size_t numel() const;
-    static size_t numel(const std::vector<size_t>& shape);
-    static std::vector<size_t> compute_stride(const std::vector<size_t>& shape);
-};
-
 class Tensor {
    private:
     std::shared_ptr<TensorImpl> impl_;

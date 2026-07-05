@@ -43,6 +43,8 @@ class TensorImpl {
 
     std::shared_ptr<Storage> storage() const;
 
+    bool is_contiguous() const;
+
     // Utility
     static size_t numel(const std::vector<size_t>& shape);
 

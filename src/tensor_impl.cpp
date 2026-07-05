@@ -31,6 +31,8 @@ size_t TensorImpl::storage_offset() const { return storage_offset_; }
 
 std::shared_ptr<Storage> TensorImpl::storage() const { return storage_; }
 
+bool TensorImpl::is_contiguous() const { return TensorImpl::compute_stride(shape_) == stride_; }
+
 // Utility
 size_t TensorImpl::numel(const std::vector<size_t>& shape) {
     size_t n_element;

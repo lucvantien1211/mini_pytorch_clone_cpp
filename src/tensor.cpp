@@ -1,10 +1,13 @@
 #include "mini_torch/tensor.h"
 
+#include <algorithm>
 #include <stdexcept>
+#include <utility>
 
 #include "mini_torch/utils.h"
 
 namespace mt {
+// Constructor
 Tensor::Tensor() : impl_(std::make_shared<TensorImpl>()) {}
 
 Tensor::Tensor(const std::vector<size_t>& shape) : impl_(std::make_shared<TensorImpl>(shape)) {
@@ -17,28 +20,32 @@ Tensor::Tensor(const std::vector<size_t>& shape) : impl_(std::make_shared<Tensor
 
 Tensor::Tensor(std::shared_ptr<TensorImpl> impl) : impl_(std::move(impl)) {}
 
-size_t Tensor::get_linear_index(const std::vector<size_t>& indices) const {
-    if (indices.size() != stride().size()) {
+size_t Tensor::get_storage_index(const std::vector<size_t>& indices) const {
+    if (indices.size() != ndim()) {
         throw std::invalid_argument("Number of indices does not match number of dimension");
     }
 
-    size_t linear_index = 0;
-    for (size_t dim = 0; dim < stride().size(); dim++) {
+    size_t storage_index = 0;
+    for (size_t dim = 0; dim < ndim(); dim++) {
         if (indices[dim] >= shape()[dim]) {
             throw std::out_of_range("Tensor index out of range");
         }
-        linear_index += stride()[dim] * indices[dim];
+        storage_index += stride()[dim] * indices[dim];
     }
 
-    return linear_index;
+    return storage_index;
 }
 
+// Metadata
 size_t Tensor::numel() const { return impl_->numel(); }
+
+size_t Tensor::ndim() const { return impl_->ndim(); }
 
 const std::vector<size_t>& Tensor::stride() const { return impl_->stride(); }
 
 const std::vector<size_t>& Tensor::shape() const { return impl_->shape(); }
 
+// Indexing
 const float& Tensor::at(size_t idx) const {
     if (idx >= impl_->numel()) {
         throw std::out_of_range("Tensor index out of range");
@@ -47,7 +54,7 @@ const float& Tensor::at(size_t idx) const {
 }
 
 const float& Tensor::at(const std::vector<size_t>& indices) const {
-    size_t index = get_linear_index(indices);
+    size_t index = get_storage_index(indices);
     return impl_->storage()->data_[index];
 }
 
@@ -59,10 +66,11 @@ float& Tensor::at(size_t idx) {
 }
 
 float& Tensor::at(const std::vector<size_t>& indices) {
-    size_t index = get_linear_index(indices);
+    size_t index = get_storage_index(indices);
     return impl_->storage()->data_[index];
 }
 
+// Print
 void Tensor::print() const {
     std::cout << "Tensor(\n";
     std::cout << "    shape=[";
@@ -74,9 +82,17 @@ void Tensor::print() const {
     std::cout << ")";
 }
 
+// View
+bool Tensor::is_contiguous() const { return impl_->is_contiguous(); }
+
 Tensor Tensor::reshape(const std::vector<size_t>& new_shape) const {
-    if (TensorImpl::numel(new_shape) != numel())
+    if (!is_contiguous()) {
+        throw std::runtime_error("Tensor is not contiguous");
+    }
+
+    if (TensorImpl::numel(new_shape) != numel()) {
         throw std::invalid_argument("Cannot reshape tensor: number of elements mismatch");
+    }
 
     std::vector<size_t> new_stride = TensorImpl::compute_stride(new_shape);
 
@@ -86,11 +102,46 @@ Tensor Tensor::reshape(const std::vector<size_t>& new_shape) const {
     return Tensor(new_impl);
 }
 
-Tensor Tensor::flatten() const {
-    Tensor flattened_tensor = reshape({numel()});
-    return flattened_tensor;
+Tensor Tensor::flatten() const { return reshape({numel()}); }
+
+Tensor Tensor::permute(const std::vector<size_t>& dims) const {
+    if (dims.size() != ndim()) {
+        throw std::invalid_argument("Number of dimensions is mismatch");
+    }
+
+    if (has_duplicates(dims)) {
+        throw std::invalid_argument("Duplicate dimension index");
+    }
+
+    bool all_dim_valid =
+        std::all_of(dims.begin(), dims.end(), [this](size_t dim) { return dim < ndim(); });
+
+    if (!all_dim_valid) {
+        throw std::out_of_range("Dimension index out of range");
+    }
+
+    std::vector<size_t> new_shape(ndim());
+    std::vector<size_t> new_stride(ndim());
+    for (size_t i = 0; i < ndim(); ++i) {
+        new_shape[i] = shape()[dims[i]];
+        new_stride[i] = stride()[dims[i]];
+    }
+    auto new_impl = std::make_shared<TensorImpl>(impl_->storage(), new_shape, new_stride,
+                                                 impl_->storage_offset());
+
+    return Tensor(new_impl);
 }
 
+Tensor Tensor::transpose(size_t dim0, size_t dim1) const {
+    if (dim0 >= ndim() || dim1 >= ndim()) {
+        throw std::out_of_range("Dimension index out of range");
+    }
+    std::vector<size_t> dims = generate_dims(ndim());
+    std::swap(dims[dim0], dims[dim1]);
+    return permute(dims);
+}
+
+// Operators
 Tensor Tensor::operator+(const Tensor& tensor) const {
     if (this->shape() != tensor.shape()) {
         throw std::invalid_argument("Shape mismatch");

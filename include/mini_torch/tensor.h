@@ -10,42 +10,52 @@ class Tensor {
    private:
     std::shared_ptr<TensorImpl> impl_;
 
-    size_t get_linear_index(const std::vector<size_t>& indices) const;
+    size_t get_storage_index(const std::vector<size_t>& indices) const;
 
    public:
-    // constructors
+    // Constructors
     Tensor();
     Tensor(const std::vector<size_t>& shape);
     explicit Tensor(std::shared_ptr<TensorImpl> impl);
 
-    // methods
+    // Methods
+    // Metadata
     size_t numel() const;
+    size_t ndim() const;
     const std::vector<size_t>& stride() const;
     const std::vector<size_t>& shape() const;
+
+    // Indexing
     const float& at(size_t idx) const;
     const float& at(const std::vector<size_t>& indices) const;
     float& at(size_t idx);
     float& at(const std::vector<size_t>& indices);
+
+    // Printing
     void print() const;
 
+    // View
+    bool is_contiguous() const;
     Tensor reshape(const std::vector<size_t>& shape) const;
     Tensor flatten() const;
+    Tensor permute(const std::vector<size_t>& dims) const;
+    Tensor transpose(size_t dim0, size_t dim1) const;
 
-    // operators
-    // element-wise tensor operators
+    // Operators
+    // Element-wise tensor operators
     Tensor operator+(const Tensor& tensor) const;
     Tensor operator-(const Tensor& tensor) const;
     Tensor operator*(const Tensor& tensor) const;
     Tensor operator/(const Tensor& tensor) const;
 
-    // tensor - scalar operators for: tensor + - * / scalar
+    // Tensor - scalar operators for: tensor + - * / scalar
     Tensor operator+(float scalar) const;
     Tensor operator-(float scalar) const;
     Tensor operator*(float scalar) const;
     Tensor operator/(float scalar) const;
 };
 
-// tensor - scalar operators for: scalar + - * / tensor
+// Tensor - scalar operators for: scalar + - * / tensor
 Tensor operator+(float scalar, const Tensor& tensor);
 Tensor operator-(float scalar, const Tensor& tensor);
 Tensor operator*(float scalar, const Tensor& tensor);

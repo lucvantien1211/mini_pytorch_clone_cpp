@@ -41,13 +41,21 @@ enable_testing()
 find_package(GTest REQUIRED)
 
 add_executable(test_tensor
-    tests/test_tensor.cpp
+    tests/tensor/test_constructor.cpp
+    tests/tensor/test_factory.cpp
+    tests/tensor/test_indexing.cpp
+    tests/tensor/test_view.cpp
+
+    tests/math/test_binary_ops.cpp
+    tests/math/test_scalar_ops.cpp
 )
 
 target_link_libraries(test_tensor
-    mini_torch
-    GTest::GTest
-    GTest::Main
+    PRIVATE
+        mini_torch
+        GTest::gtest_main
 )
 
-add_test(NAME TensorTests COMMAND test_tensor)
+include(GoogleTest)
+
+gtest_discover_tests(test_tensor)

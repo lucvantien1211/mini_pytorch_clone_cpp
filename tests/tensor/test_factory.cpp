@@ -48,12 +48,33 @@ TEST(FactoryTest, ArangeFactoryFunctionProducesCorrectResult) {
     }
 }
 
+TEST(FactoryTest, ArangeFactoryFunctionProducesCorrectResultOnNegativeStep) {
+    mt::Tensor t = mt::arange(5.0f, 0.0f, -1.0f);
+
+    // numel
+    EXPECT_EQ(t.numel(), 5);
+
+    // shape
+    EXPECT_EQ(t.shape().size(), 1);
+    EXPECT_EQ(t.shape()[0], 5);
+
+    // value
+    for (size_t i = 0; i < t.numel(); i++) {
+        EXPECT_FLOAT_EQ(t.at(i), 5.0f - static_cast<float>(i));
+    }
+}
+
 TEST(FactoryTest, ArangeFactoryFunctionThrowsOnZeroStep) {
     EXPECT_THROW(mt::arange(0.0f, 6.0f, 0.0f), std::invalid_argument);
 }
 
 TEST(FactoryTest, ArangeFactoryFunctionReturnsEmptyTensor) {
-    mt::Tensor t = mt::arange(10.0f, 5.0f);
+    // start > end, step > 0
+    mt::Tensor a = mt::arange(10.0f, 5.0f);
 
-    EXPECT_EQ(t.numel(), 0);
+    // start == end
+    mt::Tensor b = mt::arange(5.0f, 5.0f);
+
+    EXPECT_EQ(a.numel(), 0);
+    EXPECT_EQ(b.numel(), 0);
 }

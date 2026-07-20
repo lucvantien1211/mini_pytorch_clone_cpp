@@ -15,8 +15,7 @@ TEST(ConstructorTest, DefaultConstructorCreateEmptyTensor) {
 TEST(ConstructorTest, ConstructorStoresShapeCorrectly) {
     mt::Tensor t({2, 3});
 
-    EXPECT_EQ(t.shape()[0], 2);
-    EXPECT_EQ(t.shape()[1], 3);
+    EXPECT_EQ(t.shape(), std::vector<size_t>({2, 3}));
 }
 
 TEST(ConstructorTest, NumelIsComputedCorrectly) {

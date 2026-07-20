@@ -10,8 +10,7 @@ TEST(FactoryTest, ZerosFactoryFunctionProducesCorrectResult) {
     mt::Tensor t = mt::zeros({2, 3});
 
     // shape
-    EXPECT_EQ(t.shape()[0], 2);
-    EXPECT_EQ(t.shape()[1], 3);
+    EXPECT_EQ(t.shape(), std::vector<size_t>({2, 3}));
 
     // value
     for (size_t i = 0; i < t.numel(); i++) {
@@ -23,8 +22,7 @@ TEST(FactoryTest, OnesFactoryFunctionProducesCorrectResult) {
     mt::Tensor t = mt::ones({2, 3});
 
     // shape
-    EXPECT_EQ(t.shape()[0], 2);
-    EXPECT_EQ(t.shape()[1], 3);
+    EXPECT_EQ(t.shape(), std::vector<size_t>({2, 3}));
 
     // value
     for (size_t i = 0; i < t.numel(); i++) {

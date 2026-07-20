@@ -11,8 +11,7 @@ TEST(ViewTest, ReshapeChangesShape) {
 
     mt::Tensor r = t.reshape({3, 2});
 
-    EXPECT_EQ(r.shape()[0], 3);
-    EXPECT_EQ(r.shape()[1], 2);
+    EXPECT_EQ(r.shape(), std::vector<size_t>({3, 2}));
 }
 
 TEST(ViewTest, ReshapeDoesNotModifyOriginalTensor) {
@@ -20,8 +19,7 @@ TEST(ViewTest, ReshapeDoesNotModifyOriginalTensor) {
 
     mt::Tensor r = t.reshape({3, 2});
 
-    EXPECT_EQ(t.shape()[0], 2);
-    EXPECT_EQ(t.shape()[1], 3);
+    EXPECT_EQ(t.shape(), std::vector<size_t>({2, 3}));
 }
 
 TEST(ViewTest, ReshapePreservesData) {
@@ -81,14 +79,10 @@ TEST(ViewTest, PermuteChangeDimensionOrderCorrectly) {
     mt::Tensor p = t.permute({1, 2, 0});
 
     // shape
-    EXPECT_EQ(p.shape()[0], 3);
-    EXPECT_EQ(p.shape()[1], 4);
-    EXPECT_EQ(p.shape()[2], 2);
+    EXPECT_EQ(p.shape(), std::vector<size_t>({3, 4, 2}));
 
     // stride
-    EXPECT_EQ(p.stride()[0], 4);
-    EXPECT_EQ(p.stride()[1], 1);
-    EXPECT_EQ(p.stride()[2], 12);
+    EXPECT_EQ(p.stride(), std::vector<size_t>({4, 1, 12}));
 
     // contiguous
     EXPECT_FALSE(p.is_contiguous());
@@ -100,14 +94,10 @@ TEST(ViewTest, IdentityPermutation) {
     mt::Tensor p = t.permute({0, 1, 2});
 
     // shape
-    EXPECT_EQ(p.shape()[0], 2);
-    EXPECT_EQ(p.shape()[1], 3);
-    EXPECT_EQ(p.shape()[2], 4);
+    EXPECT_EQ(p.shape(), std::vector<size_t>({2, 3, 4}));
 
     // stride
-    EXPECT_EQ(p.stride()[0], 12);
-    EXPECT_EQ(p.stride()[1], 4);
-    EXPECT_EQ(p.stride()[2], 1);
+    EXPECT_EQ(p.stride(), std::vector<size_t>({12, 4, 1}));
 
     // contiguous
     EXPECT_TRUE(p.is_contiguous());
@@ -142,14 +132,10 @@ TEST(ViewTest, TransposeChangeDimensionOrderCorrectly) {
     mt::Tensor p = t.transpose(1, 2);
 
     // shape
-    EXPECT_EQ(p.shape()[0], 2);
-    EXPECT_EQ(p.shape()[1], 4);
-    EXPECT_EQ(p.shape()[2], 3);
+    EXPECT_EQ(p.shape(), std::vector<size_t>({2, 4, 3}));
 
     // stride
-    EXPECT_EQ(p.stride()[0], 12);
-    EXPECT_EQ(p.stride()[1], 1);
-    EXPECT_EQ(p.stride()[2], 4);
+    EXPECT_EQ(p.stride(), std::vector<size_t>({12, 1, 4}));
 
     // contiguous
     EXPECT_FALSE(p.is_contiguous());
@@ -176,12 +162,10 @@ TEST(ViewTest, RepeatedlyTransposeSameDimReturnsOriginal) {
     mt::Tensor p = t.transpose(0, 1).transpose(0, 1);
 
     // shape
-    EXPECT_EQ(p.shape()[0], 2);
-    EXPECT_EQ(p.shape()[1], 3);
+    EXPECT_EQ(p.shape(), std::vector<size_t>({2, 3}));
 
     // stride
-    EXPECT_EQ(p.stride()[0], 3);
-    EXPECT_EQ(p.stride()[1], 1);
+    EXPECT_EQ(p.stride(), std::vector<size_t>({3, 1}));
 
     // contiguous
     EXPECT_TRUE(p.is_contiguous());
@@ -199,4 +183,76 @@ TEST(ViewTest, RepeatedlyTransposeSameDimReturnsOriginal) {
 TEST(ViewTest, TransposeThrowsOnOutOfRangeDimIndex) {
     mt::Tensor t({2, 3});
     EXPECT_THROW(t.transpose(0, 2), std::out_of_range);
+}
+
+TEST(ViewTest, SqueezeProducesCorrectResult) {
+    mt::Tensor t({1, 2, 1, 3});
+
+    mt::Tensor p = t.squeeze();  // squeeze all singleton dims
+    EXPECT_EQ(p.ndim(), 2);
+    EXPECT_EQ(p.shape(), std::vector<size_t>({2, 3}));
+    EXPECT_EQ(p.stride(), std::vector<size_t>({3, 1}));
+
+    mt::Tensor q = t.squeeze(2);  // squeeze one singleton dim
+    EXPECT_EQ(q.ndim(), 3);
+    EXPECT_EQ(q.shape(), std::vector<size_t>({1, 2, 3}));
+    EXPECT_EQ(q.stride(), std::vector<size_t>({6, 3, 1}));
+}
+
+TEST(ViewTest, SqueezeNonContiguousProducesCorrectResult) {
+    mt::Tensor t({1, 2, 3});
+    mt::Tensor p = t.transpose(1, 2).squeeze();
+    EXPECT_EQ(p.ndim(), 2);
+    EXPECT_EQ(p.shape(), std::vector<size_t>({3, 2}));
+    EXPECT_EQ(p.stride(), std::vector<size_t>({1, 3}));
+}
+
+TEST(ViewTest, SqueezeNonSingletonDimReturnsOriginalTensor) {
+    mt::Tensor t({3, 4});
+    mt::Tensor p = t.squeeze(1);
+    EXPECT_EQ(p.ndim(), 2);
+    EXPECT_EQ(p.shape(), std::vector<size_t>({3, 4}));
+    EXPECT_EQ(p.stride(), std::vector<size_t>({4, 1}));
+}
+
+TEST(ViewTest, SqueezeThrowsOnOutOfRangeIndex) {
+    mt::Tensor t({1, 2, 3});
+    EXPECT_THROW(t.squeeze(3), std::out_of_range);
+}
+
+TEST(ViewTest, UnsqueezeProducesCorrectResult) {
+    mt::Tensor t({2, 3});
+
+    mt::Tensor u = t.unsqueeze(1);
+
+    EXPECT_EQ(u.ndim(), 3);
+    EXPECT_EQ(u.shape(), std::vector<size_t>({2, 1, 3}));
+    EXPECT_EQ(u.stride(), std::vector<size_t>({3, 3, 1}));
+}
+
+TEST(ViewTest, UnsqueezeNonContiguousProducesCorrectResult) {
+    mt::Tensor t({2, 3});
+
+    mt::Tensor p = t.transpose(0, 1);
+
+    mt::Tensor u = p.unsqueeze(0);
+
+    EXPECT_EQ(u.shape(), std::vector<size_t>({1, 3, 2}));
+
+    EXPECT_EQ(u.stride(), std::vector<size_t>({3, 1, 3}));
+}
+
+TEST(ViewTest, UnsqueezeAfterLastDim) {
+    mt::Tensor t({2, 3});
+
+    mt::Tensor u = t.unsqueeze(2);
+
+    EXPECT_EQ(u.ndim(), 3);
+    EXPECT_EQ(u.shape(), std::vector<size_t>({2, 3, 1}));
+    EXPECT_EQ(u.stride(), std::vector<size_t>({3, 1, 1}));
+}
+
+TEST(ViewTest, UnsqueezeThrowsOnOutOfRangeIndex) {
+    mt::Tensor t({2, 3});
+    EXPECT_THROW(t.unsqueeze(3), std::out_of_range);
 }

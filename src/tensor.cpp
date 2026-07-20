@@ -141,6 +141,50 @@ Tensor Tensor::transpose(size_t dim0, size_t dim1) const {
     return permute(dims);
 }
 
+Tensor Tensor::squeeze() const {
+    std::vector<size_t> singleton_dims = find_singleton_dims(shape());
+    std::vector<size_t> new_shape = remove_dims(shape(), singleton_dims);
+    std::vector<size_t> new_stride = remove_dims(stride(), singleton_dims);
+
+    auto new_impl = std::make_shared<TensorImpl>(impl_->storage(), new_shape, new_stride,
+                                                 impl_->storage_offset());
+
+    return Tensor(new_impl);
+}
+
+Tensor Tensor::squeeze(size_t dim) const {
+    if (dim >= ndim()) {
+        throw std::out_of_range("Dimension index out of range");
+    }
+    if (shape()[dim] != 1) {
+        return *this;
+    }
+
+    std::vector<size_t> new_shape = remove_dims(shape(), {dim});
+    std::vector<size_t> new_stride = remove_dims(stride(), {dim});
+    auto new_impl = std::make_shared<TensorImpl>(impl_->storage(), new_shape, new_stride,
+                                                 impl_->storage_offset());
+
+    return Tensor(new_impl);
+}
+
+Tensor Tensor::unsqueeze(size_t dim) const {
+    if (dim > ndim()) {
+        throw std::out_of_range("Dimension index out of range");
+    }
+
+    std::vector<size_t> new_shape = insert_dim(shape(), dim, 1);
+
+    size_t stride_to_add = (dim == ndim()) ? 1 : shape()[dim] * stride()[dim];
+
+    std::vector<size_t> new_stride = insert_dim(stride(), dim, stride_to_add);
+
+    auto new_impl = std::make_shared<TensorImpl>(impl_->storage(), new_shape, new_stride,
+                                                 impl_->storage_offset());
+
+    return Tensor(new_impl);
+}
+
 // Operators
 Tensor Tensor::operator+(const Tensor& tensor) const {
     if (this->shape() != tensor.shape()) {

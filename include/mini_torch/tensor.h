@@ -36,10 +36,14 @@ class Tensor {
 
     // View
     bool is_contiguous() const;
+    Tensor contiguous() const;
     Tensor reshape(const std::vector<size_t>& shape) const;
     Tensor flatten() const;
     Tensor permute(const std::vector<size_t>& dims) const;
     Tensor transpose(size_t dim0, size_t dim1) const;
+    Tensor squeeze() const;
+    Tensor squeeze(size_t dim) const;
+    Tensor unsqueeze(size_t dim) const;
 
     // Operators
     // Element-wise tensor operators

@@ -38,3 +38,43 @@ inline std::vector<size_t> generate_dims(size_t ndim) {
 
     return dims;
 }
+
+inline std::vector<size_t> find_singleton_dims(const std::vector<size_t>& shape) {
+    std::vector<size_t> singleton_dims;
+    size_t ndim = shape.size();
+    singleton_dims.reserve(ndim);
+
+    for (size_t dim = 0; dim < ndim; ++dim) {
+        if (shape[dim] == 1) {
+            singleton_dims.push_back(dim);
+        }
+    }
+
+    return singleton_dims;
+};
+
+inline std::vector<size_t> remove_dims(const std::vector<size_t>& values,
+                                       const std::vector<size_t>& dims) {
+    std::vector<bool> mask(values.size(), false);
+
+    for (size_t idx : dims) {
+        mask[idx] = true;
+    }
+
+    std::vector<size_t> out;
+    out.reserve(values.size() - dims.size());
+
+    for (size_t i = 0; i < values.size(); i++) {
+        if (!mask[i]) {
+            out.push_back(values[i]);
+        }
+    }
+
+    return out;
+};
+
+inline std::vector<size_t> insert_dim(const std::vector<size_t>& values, size_t dim, size_t value) {
+    std::vector<size_t> out = values;
+    out.insert(out.begin() + dim, value);
+    return out;
+};

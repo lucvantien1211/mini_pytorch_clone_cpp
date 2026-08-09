@@ -20,6 +20,7 @@ add_library(mini_torch STATIC
     src/tensor.cpp
     src/tensor_impl.cpp
     src/factory.cpp
+    src/tensor_iterator.cpp
 )
 
 # =========================================

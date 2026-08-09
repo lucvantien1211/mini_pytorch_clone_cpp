@@ -3,8 +3,11 @@
 #include <stdexcept>
 
 #include "mini_torch/tensor.h"
+#include "mini_torch/utils.h"
 
 namespace mt {
+IndexIterator::IndexIterator() {}
+
 IndexIterator::IndexIterator(const std::vector<size_t>& shape) {
     iteration_shape_ = shape;
 
@@ -38,4 +41,30 @@ void IndexIterator::increment_index() {
     // Finish iterating
     finished_ = true;
 }
+
+TensorIterator::TensorIterator(const Tensor& out, const Tensor& a, const Tensor& b)
+    : out_(out), a_(a), b_(b) {
+    if ((out.shape() == a.shape()) && (out.shape() == b.shape())) {
+        index_iterator_ = IndexIterator(out.shape());
+    } else {
+        throw std::invalid_argument("Input Tensors are not equal in shape");
+    }
+}
+
+bool TensorIterator::done() const { return index_iterator_.done(); }
+
+void TensorIterator::next() { index_iterator_.next(); }
+
+size_t TensorIterator::out_offset() const {
+    return get_storage_index(index_iterator_.index(), out_.stride(), out_.storage_offset());
+}
+
+size_t TensorIterator::a_offset() const {
+    return get_storage_index(index_iterator_.index(), a_.stride(), a_.storage_offset());
+}
+
+size_t TensorIterator::b_offset() const {
+    return get_storage_index(index_iterator_.index(), b_.stride(), b_.storage_offset());
+}
+
 }  // namespace mt

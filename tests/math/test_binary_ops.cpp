@@ -213,3 +213,20 @@ TEST(BinaryOpsTest, TensorDivisionThrowsOnShapeMismatch) {
 
     EXPECT_THROW(a / b, std::invalid_argument);
 }
+
+TEST(BinaryOpsTest, BroadcastAdditionProducesCorrectResult) {
+    mt::Tensor a = mt::arange(1.0f, 7.0f).reshape({2, 3});
+    mt::Tensor b = mt::ones({3});
+
+    mt::Tensor c = a + b;
+    // shape
+    EXPECT_EQ(c.shape(), std::vector<size_t>({2, 3}));
+
+    // value
+    EXPECT_FLOAT_EQ(c.at(0), 2.0f);
+    EXPECT_FLOAT_EQ(c.at(1), 3.0f);
+    EXPECT_FLOAT_EQ(c.at(2), 4.0f);
+    EXPECT_FLOAT_EQ(c.at(3), 5.0f);
+    EXPECT_FLOAT_EQ(c.at(4), 6.0f);
+    EXPECT_FLOAT_EQ(c.at(5), 7.0f);
+}

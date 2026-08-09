@@ -205,13 +205,19 @@ Tensor Tensor::expand(const std::vector<size_t>& target_shape) const {
 
 // Operators
 Tensor Tensor::operator+(const Tensor& tensor) const {
-    if (this->shape() != tensor.shape()) {
-        throw std::invalid_argument("Shape mismatch");
-    }
+    std::vector<size_t> out_shape = broadcast_shape(this->shape(), tensor.shape());
 
-    Tensor out(this->shape());
-    for (size_t i = 0; i < numel(); i++) {
-        out.at(i) = this->at(i) + tensor.at(i);
+    Tensor out(out_shape);
+    Tensor broadcast_a = this->expand(out_shape);
+    Tensor broadcast_b = tensor.expand(out_shape);
+
+    TensorIterator iter(out, broadcast_a, broadcast_b);
+
+    while (!iter.done()) {
+        out.at(iter.out_offset()) =
+            broadcast_a.at(iter.a_offset()) + broadcast_b.at(iter.b_offset());
+
+        iter.next();
     }
 
     return out;

@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <utility>
 
+#include "mini_torch/tensor_iterator.h"
 #include "mini_torch/utils.h"
 
 namespace mt {
@@ -20,22 +21,6 @@ Tensor::Tensor(const std::vector<size_t>& shape) : impl_(std::make_shared<Tensor
 
 Tensor::Tensor(std::shared_ptr<TensorImpl> impl) : impl_(std::move(impl)) {}
 
-size_t Tensor::get_storage_index(const std::vector<size_t>& indices) const {
-    if (indices.size() != ndim()) {
-        throw std::invalid_argument("Number of indices does not match number of dimension");
-    }
-
-    size_t storage_index = 0;
-    for (size_t dim = 0; dim < ndim(); dim++) {
-        if (indices[dim] >= shape()[dim]) {
-            throw std::out_of_range("Tensor index out of range");
-        }
-        storage_index += stride()[dim] * indices[dim];
-    }
-
-    return storage_index;
-}
-
 // Metadata
 size_t Tensor::numel() const { return impl_->numel(); }
 
@@ -44,6 +29,8 @@ size_t Tensor::ndim() const { return impl_->ndim(); }
 const std::vector<size_t>& Tensor::stride() const { return impl_->stride(); }
 
 const std::vector<size_t>& Tensor::shape() const { return impl_->shape(); }
+
+size_t Tensor::storage_offset() const { return impl_->storage_offset(); }
 
 // Indexing
 const float& Tensor::at(size_t idx) const {
@@ -54,7 +41,8 @@ const float& Tensor::at(size_t idx) const {
 }
 
 const float& Tensor::at(const std::vector<size_t>& indices) const {
-    size_t index = get_storage_index(indices);
+    validate_indices(indices, shape());
+    size_t index = get_storage_index(indices, stride(), storage_offset());
     return impl_->storage()->data_[index];
 }
 
@@ -66,7 +54,8 @@ float& Tensor::at(size_t idx) {
 }
 
 float& Tensor::at(const std::vector<size_t>& indices) {
-    size_t index = get_storage_index(indices);
+    validate_indices(indices, shape());
+    size_t index = get_storage_index(indices, stride(), storage_offset());
     return impl_->storage()->data_[index];
 }
 
@@ -180,6 +169,35 @@ Tensor Tensor::unsqueeze(size_t dim) const {
     std::vector<size_t> new_stride = insert_dim(stride(), dim, stride_to_add);
 
     auto new_impl = std::make_shared<TensorImpl>(impl_->storage(), new_shape, new_stride,
+                                                 impl_->storage_offset());
+
+    return Tensor(new_impl);
+}
+
+Tensor Tensor::expand(const std::vector<size_t>& target_shape) const {
+    size_t out_ndim = target_shape.size();
+    if (out_ndim < ndim()) {
+        throw std::invalid_argument(
+            "Number of output dimension must larger than or equal to the original");
+    }
+
+    std::vector<size_t> padded_shape = left_pad_dim(shape(), out_ndim, 1);
+    std::vector<size_t> padded_stride = left_pad_dim(stride(), out_ndim, 0);
+    std::vector<size_t> target_stride(out_ndim);
+
+    for (size_t i = 0; i < out_ndim; ++i) {
+        if (padded_shape[i] == target_shape[i]) {
+            // keep original stride
+            target_stride[i] = padded_stride[i];
+        } else if (padded_shape[i] == 1) {
+            // broadcasted dim -> stride = 0
+            target_stride[i] = 0;
+        } else {
+            throw std::runtime_error("Cannot broadcast original tensor to target shape");
+        }
+    }
+
+    auto new_impl = std::make_shared<TensorImpl>(impl_->storage(), target_shape, target_stride,
                                                  impl_->storage_offset());
 
     return Tensor(new_impl);

@@ -10,8 +10,6 @@ class Tensor {
    private:
     std::shared_ptr<TensorImpl> impl_;
 
-    size_t get_storage_index(const std::vector<size_t>& indices) const;
-
    public:
     // Constructors
     Tensor();
@@ -24,6 +22,7 @@ class Tensor {
     size_t ndim() const;
     const std::vector<size_t>& stride() const;
     const std::vector<size_t>& shape() const;
+    size_t storage_offset() const;
 
     // Indexing
     const float& at(size_t idx) const;
@@ -44,6 +43,7 @@ class Tensor {
     Tensor squeeze() const;
     Tensor squeeze(size_t dim) const;
     Tensor unsqueeze(size_t dim) const;
+    Tensor expand(const std::vector<size_t>& target_shape) const;
 
     // Operators
     // Element-wise tensor operators

@@ -53,7 +53,7 @@ TEST(BinaryOpsTest, TensorAdditionThrowsOnShapeMismatch) {
     mt::Tensor a({2, 3});
     mt::Tensor b({3, 2});
 
-    EXPECT_THROW(a + b, std::invalid_argument);
+    EXPECT_THROW(a + b, std::runtime_error);
 }
 
 TEST(BinaryOpsTest, TensorSubtractionProducesCorrectResult) {
@@ -229,4 +229,44 @@ TEST(BinaryOpsTest, BroadcastAdditionProducesCorrectResult) {
     EXPECT_FLOAT_EQ(c.at(3), 5.0f);
     EXPECT_FLOAT_EQ(c.at(4), 6.0f);
     EXPECT_FLOAT_EQ(c.at(5), 7.0f);
+}
+
+TEST(BinaryOpsTest, AdditionNonContiguousTensor) {
+    mt::Tensor a = mt::arange(1.0f, 7.0f).reshape({2, 3});
+    mt::Tensor b = mt::arange(1.0f, 7.0f).reshape({3, 2}).transpose(0, 1);
+
+    mt::Tensor c = a + b;
+    // shape
+    EXPECT_EQ(c.shape(), std::vector<size_t>({2, 3}));
+
+    // value
+    EXPECT_FLOAT_EQ(c.at(0), 2.0f);
+    EXPECT_FLOAT_EQ(c.at(1), 5.0f);
+    EXPECT_FLOAT_EQ(c.at(2), 8.0f);
+    EXPECT_FLOAT_EQ(c.at(3), 6.0f);
+    EXPECT_FLOAT_EQ(c.at(4), 9.0f);
+    EXPECT_FLOAT_EQ(c.at(5), 12.0f);
+}
+
+TEST(BinaryOpsTest, BroadcastMiddleDim) {
+    mt::Tensor a = mt::arange(1.0f, 13.0f).reshape({2, 2, 3});
+    mt::Tensor b = mt::ones({2, 1, 3});
+
+    mt::Tensor c = a + b;
+    // shape
+    EXPECT_EQ(c.shape(), std::vector<size_t>({2, 2, 3}));
+
+    // value
+    EXPECT_FLOAT_EQ(c.at(0), 2.0f);
+    EXPECT_FLOAT_EQ(c.at(1), 3.0f);
+    EXPECT_FLOAT_EQ(c.at(2), 4.0f);
+    EXPECT_FLOAT_EQ(c.at(3), 5.0f);
+    EXPECT_FLOAT_EQ(c.at(4), 6.0f);
+    EXPECT_FLOAT_EQ(c.at(5), 7.0f);
+    EXPECT_FLOAT_EQ(c.at(6), 8.0f);
+    EXPECT_FLOAT_EQ(c.at(7), 9.0f);
+    EXPECT_FLOAT_EQ(c.at(8), 10.0f);
+    EXPECT_FLOAT_EQ(c.at(9), 11.0f);
+    EXPECT_FLOAT_EQ(c.at(10), 12.0f);
+    EXPECT_FLOAT_EQ(c.at(11), 13.0f);
 }

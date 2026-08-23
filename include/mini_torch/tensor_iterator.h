@@ -5,6 +5,11 @@
 #include "mini_torch/tensor.h"
 
 namespace mt {
+struct Operand {
+    const Tensor* tensor;
+    std::vector<size_t> stride;
+};
+
 class IndexIterator {
    private:
     std::vector<size_t> iteration_shape_;
@@ -46,5 +51,7 @@ class TensorIterator {
 
     size_t b_offset() const;
 };
+
+Operand make_operand(Tensor& tensor, const std::vector<size_t>& iteration_shape);
 
 }  // namespace mt

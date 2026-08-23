@@ -132,3 +132,31 @@ inline std::vector<size_t> broadcast_shape(const std::vector<size_t>& shape_a,
 
     return out_shape;
 };
+
+inline std::vector<size_t> compute_expand_stride(const std::vector<size_t>& shape,
+                                                 const std::vector<size_t>& stride,
+                                                 const std::vector<size_t>& target_shape) {
+    size_t out_ndim = target_shape.size();
+    if (out_ndim < shape.size()) {
+        throw std::invalid_argument(
+            "Number of output dimension must larger than or equal to the original");
+    }
+
+    std::vector<size_t> padded_shape = left_pad_dim(shape, out_ndim, 1);
+    std::vector<size_t> padded_stride = left_pad_dim(stride, out_ndim, 0);
+    std::vector<size_t> target_stride(out_ndim);
+
+    for (size_t i = 0; i < out_ndim; ++i) {
+        if (padded_shape[i] == target_shape[i]) {
+            // keep original stride
+            target_stride[i] = padded_stride[i];
+        } else if (padded_shape[i] == 1) {
+            // broadcasted dim -> stride = 0
+            target_stride[i] = 0;
+        } else {
+            throw std::runtime_error("Cannot broadcast original tensor to target shape");
+        }
+    }
+
+    return target_stride;
+};

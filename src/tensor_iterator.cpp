@@ -67,4 +67,8 @@ size_t TensorIterator::b_offset() const {
     return get_storage_index(index_iterator_.index(), b_.stride(), b_.storage_offset());
 }
 
+Operand make_operand(Tensor& tensor, const std::vector<size_t>& iteration_shape) {
+    return {&tensor, compute_expand_stride(tensor.shape(), tensor.stride(), iteration_shape)};
+}
+
 }  // namespace mt

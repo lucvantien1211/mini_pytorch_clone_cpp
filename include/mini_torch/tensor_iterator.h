@@ -32,26 +32,20 @@ class IndexIterator {
 
 class TensorIterator {
    private:
-    const Tensor& out_;
-    const Tensor& a_;
-    const Tensor& b_;
+    std::vector<Operand> operands_;
 
     IndexIterator index_iterator_;
 
    public:
-    TensorIterator(const Tensor& out, const Tensor& a, const Tensor& b);
+    TensorIterator(Tensor& output, const std::vector<const Tensor*>& inputs);
 
     bool done() const;
 
     void next();
 
-    size_t out_offset() const;
-
-    size_t a_offset() const;
-
-    size_t b_offset() const;
+    std::vector<size_t> current_offsets() const;
 };
 
-Operand make_operand(Tensor& tensor, const std::vector<size_t>& iteration_shape);
+Operand make_operand(const Tensor& tensor, const std::vector<size_t>& iteration_shape);
 
 }  // namespace mt

@@ -42,32 +42,35 @@ void IndexIterator::increment_index() {
     finished_ = true;
 }
 
-TensorIterator::TensorIterator(const Tensor& out, const Tensor& a, const Tensor& b)
-    : out_(out), a_(a), b_(b) {
-    if ((out.shape() == a.shape()) && (out.shape() == b.shape())) {
-        index_iterator_ = IndexIterator(out.shape());
-    } else {
-        throw std::invalid_argument("Input Tensors are not equal in shape");
+TensorIterator::TensorIterator(Tensor& output, const std::vector<const Tensor*>& inputs) {
+    // Output is set to be the first operand
+    operands_.push_back(make_operand(output, output.shape()));
+
+    for (const Tensor* input : inputs) {
+        operands_.push_back(make_operand(*input, output.shape()));
     }
+
+    index_iterator_ = IndexIterator(output.shape());
 }
 
 bool TensorIterator::done() const { return index_iterator_.done(); }
 
 void TensorIterator::next() { index_iterator_.next(); }
 
-size_t TensorIterator::out_offset() const {
-    return get_storage_index(index_iterator_.index(), out_.stride(), out_.storage_offset());
+std::vector<size_t> TensorIterator::current_offsets() const {
+    std::vector<size_t> index = index_iterator_.index();
+
+    std::vector<size_t> offsets;
+
+    for (Operand operand : operands_) {
+        offsets.push_back(
+            get_storage_index(index, operand.stride, operand.tensor->storage_offset()));
+    }
+
+    return offsets;
 }
 
-size_t TensorIterator::a_offset() const {
-    return get_storage_index(index_iterator_.index(), a_.stride(), a_.storage_offset());
-}
-
-size_t TensorIterator::b_offset() const {
-    return get_storage_index(index_iterator_.index(), b_.stride(), b_.storage_offset());
-}
-
-Operand make_operand(Tensor& tensor, const std::vector<size_t>& iteration_shape) {
+Operand make_operand(const Tensor& tensor, const std::vector<size_t>& iteration_shape) {
     return {&tensor, compute_expand_stride(tensor.shape(), tensor.stride(), iteration_shape)};
 }
 

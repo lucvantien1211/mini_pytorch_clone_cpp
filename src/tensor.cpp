@@ -208,14 +208,13 @@ Tensor Tensor::operator+(const Tensor& tensor) const {
     std::vector<size_t> out_shape = broadcast_shape(this->shape(), tensor.shape());
 
     Tensor out(out_shape);
-    Tensor broadcast_a = this->expand(out_shape);
-    Tensor broadcast_b = tensor.expand(out_shape);
 
-    TensorIterator iter(out, broadcast_a, broadcast_b);
+    TensorIterator iter(out, std::vector<const Tensor*>({this, &tensor}));
 
     while (!iter.done()) {
-        out.at(iter.out_offset()) =
-            broadcast_a.at(iter.a_offset()) + broadcast_b.at(iter.b_offset());
+        std::vector<size_t> offsets = iter.current_offsets();
+
+        out.at(offsets[0]) = this->at(offsets[1]) + tensor.at(offsets[2]);
 
         iter.next();
     }

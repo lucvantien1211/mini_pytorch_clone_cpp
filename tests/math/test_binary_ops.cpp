@@ -103,7 +103,7 @@ TEST(BinaryOpsTest, TensorSubtractionThrowsOnShapeMismatch) {
     mt::Tensor a({2, 3});
     mt::Tensor b({3, 2});
 
-    EXPECT_THROW(a - b, std::invalid_argument);
+    EXPECT_THROW(a - b, std::runtime_error);
 }
 
 TEST(BinaryOpsTest, TensorProductionProducesCorrectResult) {
@@ -153,7 +153,7 @@ TEST(BinaryOpsTest, TensorProductionThrowsOnShapeMismatch) {
     mt::Tensor a({2, 3});
     mt::Tensor b({3, 2});
 
-    EXPECT_THROW(a * b, std::invalid_argument);
+    EXPECT_THROW(a * b, std::runtime_error);
 }
 
 TEST(BinaryOpsTest, TensorDivisionProducesCorrectResult) {
@@ -211,7 +211,7 @@ TEST(BinaryOpsTest, TensorDivisionThrowsOnShapeMismatch) {
     mt::Tensor a({2, 3});
     mt::Tensor b({3, 2});
 
-    EXPECT_THROW(a / b, std::invalid_argument);
+    EXPECT_THROW(a / b, std::runtime_error);
 }
 
 TEST(BinaryOpsTest, BroadcastAdditionProducesCorrectResult) {

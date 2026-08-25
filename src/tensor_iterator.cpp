@@ -61,8 +61,9 @@ std::vector<size_t> TensorIterator::current_offsets() const {
     std::vector<size_t> index = index_iterator_.index();
 
     std::vector<size_t> offsets;
+    offsets.reserve(operands_.size());
 
-    for (Operand operand : operands_) {
+    for (const Operand& operand : operands_) {
         offsets.push_back(
             get_storage_index(index, operand.stride, operand.tensor->storage_offset()));
     }

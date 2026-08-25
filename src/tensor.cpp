@@ -223,42 +223,58 @@ Tensor Tensor::operator+(const Tensor& tensor) const {
 }
 
 Tensor Tensor::operator-(const Tensor& tensor) const {
-    if (this->shape() != tensor.shape()) {
-        throw std::invalid_argument("Shape mismatch");
-    }
+    std::vector<size_t> out_shape = broadcast_shape(this->shape(), tensor.shape());
 
-    Tensor out(this->shape());
-    for (size_t i = 0; i < this->numel(); i++) {
-        out.storage_at(i) = this->storage_at(i) - tensor.storage_at(i);
+    Tensor out(out_shape);
+
+    TensorIterator iter(out, std::vector<const Tensor*>({this, &tensor}));
+
+    while (!iter.done()) {
+        std::vector<size_t> offsets = iter.current_offsets();
+
+        out.storage_at(offsets[0]) = this->storage_at(offsets[1]) - tensor.storage_at(offsets[2]);
+
+        iter.next();
     }
 
     return out;
 }
 
 Tensor Tensor::operator*(const Tensor& tensor) const {
-    if (this->shape() != tensor.shape()) {
-        throw std::invalid_argument("Shape mismatch");
-    }
+    std::vector<size_t> out_shape = broadcast_shape(this->shape(), tensor.shape());
 
-    Tensor out(this->shape());
-    for (size_t i = 0; i < this->numel(); i++) {
-        out.storage_at(i) = this->storage_at(i) * tensor.storage_at(i);
+    Tensor out(out_shape);
+
+    TensorIterator iter(out, std::vector<const Tensor*>({this, &tensor}));
+
+    while (!iter.done()) {
+        std::vector<size_t> offsets = iter.current_offsets();
+
+        out.storage_at(offsets[0]) = this->storage_at(offsets[1]) * tensor.storage_at(offsets[2]);
+
+        iter.next();
     }
 
     return out;
 }
 
 Tensor Tensor::operator/(const Tensor& tensor) const {
-    if (this->shape() != tensor.shape()) {
-        throw std::invalid_argument("Shape mismatch");
-    }
+    std::vector<size_t> out_shape = broadcast_shape(this->shape(), tensor.shape());
 
-    Tensor out(this->shape());
-    for (size_t i = 0; i < this->numel(); i++) {
-        if (tensor.storage_at(i) == 0.0f) {
+    Tensor out(out_shape);
+
+    TensorIterator iter(out, std::vector<const Tensor*>({this, &tensor}));
+
+    while (!iter.done()) {
+        std::vector<size_t> offsets = iter.current_offsets();
+
+        if (tensor.storage_at(offsets[2]) == 0.0f) {
             throw std::runtime_error("Cannot divide by 0");
         }
-        out.storage_at(i) = this->storage_at(i) / tensor.storage_at(i);
+
+        out.storage_at(offsets[0]) = this->storage_at(offsets[1]) / tensor.storage_at(offsets[2]);
+
+        iter.next();
     }
 
     return out;

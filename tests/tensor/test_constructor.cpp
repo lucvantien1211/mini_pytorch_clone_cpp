@@ -28,7 +28,7 @@ TEST(ConstructorTest, TensorIsZeroInitialized) {
     mt::Tensor t({2, 3});
 
     for (size_t i = 0; i < t.numel(); i++) {
-        EXPECT_FLOAT_EQ(t.at(i), 0.0f);
+        EXPECT_FLOAT_EQ(t.storage_at(i), 0.0f);
     }
 }
 

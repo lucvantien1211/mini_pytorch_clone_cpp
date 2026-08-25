@@ -20,33 +20,33 @@ TEST(BinaryOpsTest, TensorAdditionProducesCorrectResult) {
     EXPECT_EQ(d.shape()[1], 3);
 
     // value
-    EXPECT_FLOAT_EQ(c.at(0), 11.0f);
-    EXPECT_FLOAT_EQ(c.at(1), 22.0f);
-    EXPECT_FLOAT_EQ(c.at(2), 33.0f);
-    EXPECT_FLOAT_EQ(c.at(3), 44.0f);
-    EXPECT_FLOAT_EQ(c.at(4), 55.0f);
-    EXPECT_FLOAT_EQ(c.at(5), 66.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(0), 11.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(1), 22.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(2), 33.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(3), 44.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(4), 55.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(5), 66.0f);
 
-    EXPECT_FLOAT_EQ(d.at(0), 11.0f);
-    EXPECT_FLOAT_EQ(d.at(1), 22.0f);
-    EXPECT_FLOAT_EQ(d.at(2), 33.0f);
-    EXPECT_FLOAT_EQ(d.at(3), 44.0f);
-    EXPECT_FLOAT_EQ(d.at(4), 55.0f);
-    EXPECT_FLOAT_EQ(d.at(5), 66.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(0), 11.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(1), 22.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(2), 33.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(3), 44.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(4), 55.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(5), 66.0f);
 }
 
 TEST(BinaryOpsTest, TensorAdditionDoesNotModifyInputs) {
     mt::Tensor a({2, 3});
     mt::Tensor b({2, 3});
 
-    a.at(0) = 1.0f;
-    b.at(0) = 10.0f;
+    a.storage_at(0) = 1.0f;
+    b.storage_at(0) = 10.0f;
 
     mt::Tensor c = a + b;
 
-    EXPECT_FLOAT_EQ(a.at(0), 1.0f);
-    EXPECT_FLOAT_EQ(b.at(0), 10.0f);
-    EXPECT_FLOAT_EQ(c.at(0), 11.0f);
+    EXPECT_FLOAT_EQ(a.storage_at(0), 1.0f);
+    EXPECT_FLOAT_EQ(b.storage_at(0), 10.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(0), 11.0f);
 }
 
 TEST(BinaryOpsTest, TensorAdditionThrowsOnShapeMismatch) {
@@ -70,33 +70,33 @@ TEST(BinaryOpsTest, TensorSubtractionProducesCorrectResult) {
     EXPECT_EQ(d.shape()[1], 3);
 
     // value
-    EXPECT_FLOAT_EQ(c.at(0), -9.0f);
-    EXPECT_FLOAT_EQ(c.at(1), -18.0f);
-    EXPECT_FLOAT_EQ(c.at(2), -27.0f);
-    EXPECT_FLOAT_EQ(c.at(3), -36.0f);
-    EXPECT_FLOAT_EQ(c.at(4), -45.0f);
-    EXPECT_FLOAT_EQ(c.at(5), -54.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(0), -9.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(1), -18.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(2), -27.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(3), -36.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(4), -45.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(5), -54.0f);
 
-    EXPECT_FLOAT_EQ(d.at(0), 9.0f);
-    EXPECT_FLOAT_EQ(d.at(1), 18.0f);
-    EXPECT_FLOAT_EQ(d.at(2), 27.0f);
-    EXPECT_FLOAT_EQ(d.at(3), 36.0f);
-    EXPECT_FLOAT_EQ(d.at(4), 45.0f);
-    EXPECT_FLOAT_EQ(d.at(5), 54.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(0), 9.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(1), 18.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(2), 27.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(3), 36.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(4), 45.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(5), 54.0f);
 }
 
 TEST(BinaryOpsTest, TensorSubtractionDoesNotModifyInputs) {
     mt::Tensor a({2, 3});
     mt::Tensor b({2, 3});
 
-    a.at(0) = 1.0f;
-    b.at(0) = 10.0f;
+    a.storage_at(0) = 1.0f;
+    b.storage_at(0) = 10.0f;
 
     mt::Tensor c = a - b;
 
-    EXPECT_FLOAT_EQ(a.at(0), 1.0f);
-    EXPECT_FLOAT_EQ(b.at(0), 10.0f);
-    EXPECT_FLOAT_EQ(c.at(0), -9.0f);
+    EXPECT_FLOAT_EQ(a.storage_at(0), 1.0f);
+    EXPECT_FLOAT_EQ(b.storage_at(0), 10.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(0), -9.0f);
 }
 
 TEST(BinaryOpsTest, TensorSubtractionThrowsOnShapeMismatch) {
@@ -120,33 +120,33 @@ TEST(BinaryOpsTest, TensorProductionProducesCorrectResult) {
     EXPECT_EQ(d.shape()[1], 3);
 
     // value
-    EXPECT_FLOAT_EQ(c.at(0), 10.0f);
-    EXPECT_FLOAT_EQ(c.at(1), 40.0f);
-    EXPECT_FLOAT_EQ(c.at(2), 90.0f);
-    EXPECT_FLOAT_EQ(c.at(3), 160.0f);
-    EXPECT_FLOAT_EQ(c.at(4), 250.0f);
-    EXPECT_FLOAT_EQ(c.at(5), 360.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(0), 10.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(1), 40.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(2), 90.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(3), 160.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(4), 250.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(5), 360.0f);
 
-    EXPECT_FLOAT_EQ(d.at(0), 10.0f);
-    EXPECT_FLOAT_EQ(d.at(1), 40.0f);
-    EXPECT_FLOAT_EQ(d.at(2), 90.0f);
-    EXPECT_FLOAT_EQ(d.at(3), 160.0f);
-    EXPECT_FLOAT_EQ(d.at(4), 250.0f);
-    EXPECT_FLOAT_EQ(d.at(5), 360.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(0), 10.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(1), 40.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(2), 90.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(3), 160.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(4), 250.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(5), 360.0f);
 }
 
 TEST(BinaryOpsTest, TensorProductionDoesNotModifyInputs) {
     mt::Tensor a({2, 3});
     mt::Tensor b({2, 3});
 
-    a.at(0) = 1.0f;
-    b.at(0) = 10.0f;
+    a.storage_at(0) = 1.0f;
+    b.storage_at(0) = 10.0f;
 
     mt::Tensor c = a * b;
 
-    EXPECT_FLOAT_EQ(a.at(0), 1.0f);
-    EXPECT_FLOAT_EQ(b.at(0), 10.0f);
-    EXPECT_FLOAT_EQ(c.at(0), 10.0f);
+    EXPECT_FLOAT_EQ(a.storage_at(0), 1.0f);
+    EXPECT_FLOAT_EQ(b.storage_at(0), 10.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(0), 10.0f);
 }
 
 TEST(BinaryOpsTest, TensorProductionThrowsOnShapeMismatch) {
@@ -170,39 +170,39 @@ TEST(BinaryOpsTest, TensorDivisionProducesCorrectResult) {
     EXPECT_EQ(d.shape()[1], 3);
 
     // value
-    EXPECT_FLOAT_EQ(c.at(0), 10.0f);
-    EXPECT_FLOAT_EQ(c.at(1), 10.0f);
-    EXPECT_FLOAT_EQ(c.at(2), 10.0f);
-    EXPECT_FLOAT_EQ(c.at(3), 10.0f);
-    EXPECT_FLOAT_EQ(c.at(4), 10.0f);
-    EXPECT_FLOAT_EQ(c.at(5), 10.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(0), 10.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(1), 10.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(2), 10.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(3), 10.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(4), 10.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(5), 10.0f);
 
-    EXPECT_FLOAT_EQ(d.at(0), 0.1f);
-    EXPECT_FLOAT_EQ(d.at(1), 0.1f);
-    EXPECT_FLOAT_EQ(d.at(2), 0.1f);
-    EXPECT_FLOAT_EQ(d.at(3), 0.1f);
-    EXPECT_FLOAT_EQ(d.at(4), 0.1f);
-    EXPECT_FLOAT_EQ(d.at(5), 0.1f);
+    EXPECT_FLOAT_EQ(d.storage_at(0), 0.1f);
+    EXPECT_FLOAT_EQ(d.storage_at(1), 0.1f);
+    EXPECT_FLOAT_EQ(d.storage_at(2), 0.1f);
+    EXPECT_FLOAT_EQ(d.storage_at(3), 0.1f);
+    EXPECT_FLOAT_EQ(d.storage_at(4), 0.1f);
+    EXPECT_FLOAT_EQ(d.storage_at(5), 0.1f);
 }
 
 TEST(BinaryOpsTest, TensorDivisionDoesNotModifyInputs) {
     mt::Tensor a = mt::ones({2, 3});
     mt::Tensor b = mt::ones({2, 3});
-    b.at(0) = 10.0f;
+    b.storage_at(0) = 10.0f;
 
     mt::Tensor c = b / a;
 
-    EXPECT_FLOAT_EQ(a.at(0), 1.0f);
-    EXPECT_FLOAT_EQ(b.at(0), 10.0f);
-    EXPECT_FLOAT_EQ(c.at(0), 10.0f);
+    EXPECT_FLOAT_EQ(a.storage_at(0), 1.0f);
+    EXPECT_FLOAT_EQ(b.storage_at(0), 10.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(0), 10.0f);
 }
 
 TEST(BinaryOpsTest, TensorDivisionThrowOnZeroDivisor) {
     mt::Tensor a({2, 3});
     mt::Tensor b({2, 3});
 
-    a.at(0) = 1.0f;
-    b.at(0) = 10.0f;
+    a.storage_at(0) = 1.0f;
+    b.storage_at(0) = 10.0f;
 
     EXPECT_THROW(a / b, std::runtime_error);
 }
@@ -223,12 +223,12 @@ TEST(BinaryOpsTest, BroadcastAdditionProducesCorrectResult) {
     EXPECT_EQ(c.shape(), std::vector<size_t>({2, 3}));
 
     // value
-    EXPECT_FLOAT_EQ(c.at(0), 2.0f);
-    EXPECT_FLOAT_EQ(c.at(1), 3.0f);
-    EXPECT_FLOAT_EQ(c.at(2), 4.0f);
-    EXPECT_FLOAT_EQ(c.at(3), 5.0f);
-    EXPECT_FLOAT_EQ(c.at(4), 6.0f);
-    EXPECT_FLOAT_EQ(c.at(5), 7.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(0), 2.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(1), 3.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(2), 4.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(3), 5.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(4), 6.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(5), 7.0f);
 }
 
 TEST(BinaryOpsTest, AdditionNonContiguousTensor) {
@@ -240,12 +240,12 @@ TEST(BinaryOpsTest, AdditionNonContiguousTensor) {
     EXPECT_EQ(c.shape(), std::vector<size_t>({2, 3}));
 
     // value
-    EXPECT_FLOAT_EQ(c.at(0), 2.0f);
-    EXPECT_FLOAT_EQ(c.at(1), 5.0f);
-    EXPECT_FLOAT_EQ(c.at(2), 8.0f);
-    EXPECT_FLOAT_EQ(c.at(3), 6.0f);
-    EXPECT_FLOAT_EQ(c.at(4), 9.0f);
-    EXPECT_FLOAT_EQ(c.at(5), 12.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(0), 2.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(1), 5.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(2), 8.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(3), 6.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(4), 9.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(5), 12.0f);
 }
 
 TEST(BinaryOpsTest, BroadcastMiddleDim) {
@@ -257,16 +257,16 @@ TEST(BinaryOpsTest, BroadcastMiddleDim) {
     EXPECT_EQ(c.shape(), std::vector<size_t>({2, 2, 3}));
 
     // value
-    EXPECT_FLOAT_EQ(c.at(0), 2.0f);
-    EXPECT_FLOAT_EQ(c.at(1), 3.0f);
-    EXPECT_FLOAT_EQ(c.at(2), 4.0f);
-    EXPECT_FLOAT_EQ(c.at(3), 5.0f);
-    EXPECT_FLOAT_EQ(c.at(4), 6.0f);
-    EXPECT_FLOAT_EQ(c.at(5), 7.0f);
-    EXPECT_FLOAT_EQ(c.at(6), 8.0f);
-    EXPECT_FLOAT_EQ(c.at(7), 9.0f);
-    EXPECT_FLOAT_EQ(c.at(8), 10.0f);
-    EXPECT_FLOAT_EQ(c.at(9), 11.0f);
-    EXPECT_FLOAT_EQ(c.at(10), 12.0f);
-    EXPECT_FLOAT_EQ(c.at(11), 13.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(0), 2.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(1), 3.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(2), 4.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(3), 5.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(4), 6.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(5), 7.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(6), 8.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(7), 9.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(8), 10.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(9), 11.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(10), 12.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(11), 13.0f);
 }

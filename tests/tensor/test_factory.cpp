@@ -14,7 +14,7 @@ TEST(FactoryTest, ZerosFactoryFunctionProducesCorrectResult) {
 
     // value
     for (size_t i = 0; i < t.numel(); i++) {
-        EXPECT_FLOAT_EQ(t.at(i), 0.0f);
+        EXPECT_FLOAT_EQ(t.storage_at(i), 0.0f);
     }
 }
 
@@ -26,7 +26,7 @@ TEST(FactoryTest, OnesFactoryFunctionProducesCorrectResult) {
 
     // value
     for (size_t i = 0; i < t.numel(); i++) {
-        EXPECT_FLOAT_EQ(t.at(i), 1.0f);
+        EXPECT_FLOAT_EQ(t.storage_at(i), 1.0f);
     }
 }
 
@@ -42,7 +42,7 @@ TEST(FactoryTest, ArangeFactoryFunctionProducesCorrectResult) {
 
     // value
     for (size_t i = 0; i < t.numel(); i++) {
-        EXPECT_FLOAT_EQ(t.at(i), static_cast<float>(i));
+        EXPECT_FLOAT_EQ(t.storage_at(i), static_cast<float>(i));
     }
 }
 
@@ -58,7 +58,7 @@ TEST(FactoryTest, ArangeFactoryFunctionProducesCorrectResultOnNegativeStep) {
 
     // value
     for (size_t i = 0; i < t.numel(); i++) {
-        EXPECT_FLOAT_EQ(t.at(i), 5.0f - static_cast<float>(i));
+        EXPECT_FLOAT_EQ(t.storage_at(i), 5.0f - static_cast<float>(i));
     }
 }
 

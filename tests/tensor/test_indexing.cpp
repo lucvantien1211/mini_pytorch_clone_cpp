@@ -9,27 +9,27 @@
 TEST(IndexingTest, MutableLinearIndexingAllowsModification) {
     mt::Tensor t({2, 3});
 
-    t.at(0) = 5.0f;
-    t.at(1) = 10.0f;
+    t.storage_at(0) = 5.0f;
+    t.storage_at(1) = 10.0f;
 
-    EXPECT_FLOAT_EQ(t.at(0), 5.0f);
-    EXPECT_FLOAT_EQ(t.at(1), 10.0f);
+    EXPECT_FLOAT_EQ(t.storage_at(0), 5.0f);
+    EXPECT_FLOAT_EQ(t.storage_at(1), 10.0f);
 }
 
 TEST(IndexingTest, ConstLinearIndexingAllowsReadOnlyAccess) {
     mt::Tensor t({2, 3});
 
-    t.at(0) = 7.0f;
+    t.storage_at(0) = 7.0f;
 
     const mt::Tensor& ct = t;
 
-    EXPECT_FLOAT_EQ(ct.at(0), 7.0f);
+    EXPECT_FLOAT_EQ(ct.storage_at(0), 7.0f);
 }
 
 TEST(IndexingTest, LinearAtThrowsWhenIndexOutOfRange) {
     mt::Tensor t({2, 3});
 
-    EXPECT_THROW(t.at(100), std::out_of_range);
+    EXPECT_THROW(t.storage_at(100), std::out_of_range);
 }
 
 TEST(IndexingTest, MultiDimensionalIndexingReadsCorrectValues) {
@@ -50,7 +50,7 @@ TEST(IndexingTest, MultiDimensionalIndexingAllowsModification) {
     t.at({1, 2}) = 99.0f;
 
     EXPECT_FLOAT_EQ(t.at({1, 2}), 99.0f);
-    EXPECT_FLOAT_EQ(t.at(5), 99.0f);
+    EXPECT_FLOAT_EQ(t.storage_at(5), 99.0f);
 }
 
 TEST(IndexingTest, MultiDimensionalIndexingThrowsForWrongRank) {

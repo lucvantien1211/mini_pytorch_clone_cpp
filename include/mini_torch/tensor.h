@@ -25,9 +25,9 @@ class Tensor {
     size_t storage_offset() const;
 
     // Indexing
-    const float& at(size_t idx) const;
+    const float& storage_at(size_t idx) const;
     const float& at(const std::vector<size_t>& indices) const;
-    float& at(size_t idx);
+    float& storage_at(size_t idx);
     float& at(const std::vector<size_t>& indices);
 
     // Printing

@@ -33,7 +33,7 @@ const std::vector<size_t>& Tensor::shape() const { return impl_->shape(); }
 size_t Tensor::storage_offset() const { return impl_->storage_offset(); }
 
 // Indexing
-const float& Tensor::at(size_t idx) const {
+const float& Tensor::storage_at(size_t idx) const {
     if (idx >= impl_->numel()) {
         throw std::out_of_range("Tensor index out of range");
     }
@@ -46,7 +46,7 @@ const float& Tensor::at(const std::vector<size_t>& indices) const {
     return impl_->storage()->data_[index];
 }
 
-float& Tensor::at(size_t idx) {
+float& Tensor::storage_at(size_t idx) {
     if (idx >= numel()) {
         throw std::out_of_range("Tensor index out of range");
     }
@@ -214,7 +214,7 @@ Tensor Tensor::operator+(const Tensor& tensor) const {
     while (!iter.done()) {
         std::vector<size_t> offsets = iter.current_offsets();
 
-        out.at(offsets[0]) = this->at(offsets[1]) + tensor.at(offsets[2]);
+        out.storage_at(offsets[0]) = this->storage_at(offsets[1]) + tensor.storage_at(offsets[2]);
 
         iter.next();
     }
@@ -229,7 +229,7 @@ Tensor Tensor::operator-(const Tensor& tensor) const {
 
     Tensor out(this->shape());
     for (size_t i = 0; i < this->numel(); i++) {
-        out.at(i) = this->at(i) - tensor.at(i);
+        out.storage_at(i) = this->storage_at(i) - tensor.storage_at(i);
     }
 
     return out;
@@ -242,7 +242,7 @@ Tensor Tensor::operator*(const Tensor& tensor) const {
 
     Tensor out(this->shape());
     for (size_t i = 0; i < this->numel(); i++) {
-        out.at(i) = this->at(i) * tensor.at(i);
+        out.storage_at(i) = this->storage_at(i) * tensor.storage_at(i);
     }
 
     return out;
@@ -255,10 +255,10 @@ Tensor Tensor::operator/(const Tensor& tensor) const {
 
     Tensor out(this->shape());
     for (size_t i = 0; i < this->numel(); i++) {
-        if (tensor.at(i) == 0.0f) {
+        if (tensor.storage_at(i) == 0.0f) {
             throw std::runtime_error("Cannot divide by 0");
         }
-        out.at(i) = this->at(i) / tensor.at(i);
+        out.storage_at(i) = this->storage_at(i) / tensor.storage_at(i);
     }
 
     return out;
@@ -267,7 +267,7 @@ Tensor Tensor::operator/(const Tensor& tensor) const {
 Tensor Tensor::operator+(float scalar) const {
     Tensor out(this->shape());
     for (size_t i = 0; i < this->numel(); i++) {
-        out.at(i) = this->at(i) + scalar;
+        out.storage_at(i) = this->storage_at(i) + scalar;
     }
     return out;
 }
@@ -275,7 +275,7 @@ Tensor Tensor::operator+(float scalar) const {
 Tensor Tensor::operator-(float scalar) const {
     Tensor out(this->shape());
     for (size_t i = 0; i < this->numel(); i++) {
-        out.at(i) = this->at(i) - scalar;
+        out.storage_at(i) = this->storage_at(i) - scalar;
     }
     return out;
 }
@@ -283,7 +283,7 @@ Tensor Tensor::operator-(float scalar) const {
 Tensor Tensor::operator*(float scalar) const {
     Tensor out(this->shape());
     for (size_t i = 0; i < this->numel(); i++) {
-        out.at(i) = this->at(i) * scalar;
+        out.storage_at(i) = this->storage_at(i) * scalar;
     }
     return out;
 }
@@ -294,7 +294,7 @@ Tensor Tensor::operator/(float scalar) const {
     }
     Tensor out(this->shape());
     for (size_t i = 0; i < this->numel(); i++) {
-        out.at(i) = this->at(i) / scalar;
+        out.storage_at(i) = this->storage_at(i) / scalar;
     }
     return out;
 }
@@ -302,7 +302,7 @@ Tensor Tensor::operator/(float scalar) const {
 Tensor operator+(float scalar, const Tensor& tensor) {
     Tensor out(tensor.shape());
     for (size_t i = 0; i < tensor.numel(); i++) {
-        out.at(i) = scalar + tensor.at(i);
+        out.storage_at(i) = scalar + tensor.storage_at(i);
     }
     return out;
 }
@@ -310,7 +310,7 @@ Tensor operator+(float scalar, const Tensor& tensor) {
 Tensor operator-(float scalar, const Tensor& tensor) {
     Tensor out(tensor.shape());
     for (size_t i = 0; i < tensor.numel(); ++i) {
-        out.at(i) = scalar - tensor.at(i);
+        out.storage_at(i) = scalar - tensor.storage_at(i);
     }
     return out;
 }
@@ -318,7 +318,7 @@ Tensor operator-(float scalar, const Tensor& tensor) {
 Tensor operator*(float scalar, const Tensor& tensor) {
     Tensor out(tensor.shape());
     for (size_t i = 0; i < tensor.numel(); i++) {
-        out.at(i) = scalar * tensor.at(i);
+        out.storage_at(i) = scalar * tensor.storage_at(i);
     }
     return out;
 }
@@ -326,10 +326,10 @@ Tensor operator*(float scalar, const Tensor& tensor) {
 Tensor operator/(float scalar, const Tensor& tensor) {
     Tensor out(tensor.shape());
     for (size_t i = 0; i < tensor.numel(); i++) {
-        if (tensor.at(i) == 0.0f) {
+        if (tensor.storage_at(i) == 0.0f) {
             throw std::runtime_error("Cannot divide by 0");
         }
-        out.at(i) = scalar / tensor.at(i);
+        out.storage_at(i) = scalar / tensor.storage_at(i);
     }
     return out;
 }

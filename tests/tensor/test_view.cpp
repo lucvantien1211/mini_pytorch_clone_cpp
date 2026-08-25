@@ -28,7 +28,7 @@ TEST(ViewTest, ReshapePreservesData) {
     mt::Tensor r = t.reshape({3, 2});
 
     for (size_t i = 0; i < 6; ++i) {
-        EXPECT_FLOAT_EQ(r.at(i), static_cast<float>(i));
+        EXPECT_FLOAT_EQ(r.storage_at(i), static_cast<float>(i));
     }
 }
 
@@ -37,9 +37,9 @@ TEST(ViewTest, ReshapeSharesStorage) {
 
     mt::Tensor b = a.reshape({3, 2});
 
-    b.at(3) = 10.0f;
+    b.storage_at(3) = 10.0f;
 
-    EXPECT_FLOAT_EQ(a.at(3), 10.0f);
+    EXPECT_FLOAT_EQ(a.storage_at(3), 10.0f);
 }
 
 TEST(ViewTest, ReshapeThrowsOnNonContiguousTensor) {
@@ -69,7 +69,7 @@ TEST(ViewTest, FlattenPreservesData) {
     mt::Tensor f = t.flatten();
 
     for (size_t i = 0; i < 6; i++) {
-        EXPECT_FLOAT_EQ(f.at(i), static_cast<float>(i));
+        EXPECT_FLOAT_EQ(f.storage_at(i), static_cast<float>(i));
     }
 }
 
@@ -106,9 +106,9 @@ TEST(ViewTest, IdentityPermutation) {
 TEST(ViewTest, PermuteSharesStorage) {
     mt::Tensor t({2, 3, 4});
     mt::Tensor p = t.permute({1, 2, 0});
-    p.at(3) = 3.0f;
+    p.storage_at(3) = 3.0f;
 
-    EXPECT_FLOAT_EQ(t.at(3), 3.0f);
+    EXPECT_FLOAT_EQ(t.storage_at(3), 3.0f);
 }
 
 TEST(ViewTest, PermuteThrowsOnMismatchNDims) {

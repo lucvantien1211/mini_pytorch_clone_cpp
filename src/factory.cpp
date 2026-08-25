@@ -9,7 +9,7 @@ Tensor zeros(const std::vector<size_t>& shape) { return Tensor(shape); }
 Tensor ones(const std::vector<size_t>& shape) {
     Tensor out(shape);
     for (size_t i = 0; i < out.numel(); ++i) {
-        out.at(i) = 1.0f;
+        out.storage_at(i) = 1.0f;
     }
     return out;
 }
@@ -30,9 +30,9 @@ Tensor arange(float start, float end, float step = 1.0f) {
     } else {
         Tensor out({size});
 
-        out.at(0) = start;
+        out.storage_at(0) = start;
         for (size_t i = 1; i < out.numel(); ++i) {
-            out.at(i) = out.at(i - 1) + step;
+            out.storage_at(i) = out.storage_at(i - 1) + step;
         }
 
         return out;

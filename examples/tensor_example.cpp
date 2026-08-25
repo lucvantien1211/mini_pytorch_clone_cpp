@@ -18,7 +18,7 @@ int main() {
     std::cout << "Linear indexing:\n";
 
     for (size_t i = 0; i < t.numel(); i++) {
-        t.at(i) = static_cast<float>(i + 1);
+        t.storage_at(i) = static_cast<float>(i + 1);
     }
 
     t.print();

@@ -20,32 +20,32 @@ TEST(ScalarOpsTest, TensorScalarAdditionProducesCorrectResult) {
     EXPECT_EQ(d.shape()[1], 3);
 
     // value
-    EXPECT_FLOAT_EQ(c.at(0), 11.0f);
-    EXPECT_FLOAT_EQ(c.at(1), 12.0f);
-    EXPECT_FLOAT_EQ(c.at(2), 13.0f);
-    EXPECT_FLOAT_EQ(c.at(3), 14.0f);
-    EXPECT_FLOAT_EQ(c.at(4), 15.0f);
-    EXPECT_FLOAT_EQ(c.at(5), 16.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(0), 11.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(1), 12.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(2), 13.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(3), 14.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(4), 15.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(5), 16.0f);
 
-    EXPECT_FLOAT_EQ(d.at(0), 11.0f);
-    EXPECT_FLOAT_EQ(d.at(1), 12.0f);
-    EXPECT_FLOAT_EQ(d.at(2), 13.0f);
-    EXPECT_FLOAT_EQ(d.at(3), 14.0f);
-    EXPECT_FLOAT_EQ(d.at(4), 15.0f);
-    EXPECT_FLOAT_EQ(d.at(5), 16.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(0), 11.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(1), 12.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(2), 13.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(3), 14.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(4), 15.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(5), 16.0f);
 }
 
 TEST(ScalarOpsTest, TensorScalarAdditionDoesNotModifyInputs) {
     mt::Tensor a({2, 3});
     float b = 10.0f;
 
-    a.at(0) = 1.0f;
+    a.storage_at(0) = 1.0f;
 
     mt::Tensor c = a + b;
 
-    EXPECT_FLOAT_EQ(a.at(0), 1.0f);
+    EXPECT_FLOAT_EQ(a.storage_at(0), 1.0f);
     EXPECT_FLOAT_EQ(b, 10.0f);
-    EXPECT_FLOAT_EQ(c.at(0), 11.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(0), 11.0f);
 }
 
 TEST(ScalarOpsTest, TensorScalarSubtractionProducesCorrectResult) {
@@ -62,32 +62,32 @@ TEST(ScalarOpsTest, TensorScalarSubtractionProducesCorrectResult) {
     EXPECT_EQ(d.shape()[1], 3);
 
     // value
-    EXPECT_FLOAT_EQ(c.at(0), -9.0f);
-    EXPECT_FLOAT_EQ(c.at(1), -8.0f);
-    EXPECT_FLOAT_EQ(c.at(2), -7.0f);
-    EXPECT_FLOAT_EQ(c.at(3), -6.0f);
-    EXPECT_FLOAT_EQ(c.at(4), -5.0f);
-    EXPECT_FLOAT_EQ(c.at(5), -4.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(0), -9.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(1), -8.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(2), -7.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(3), -6.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(4), -5.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(5), -4.0f);
 
-    EXPECT_FLOAT_EQ(d.at(0), 9.0f);
-    EXPECT_FLOAT_EQ(d.at(1), 8.0f);
-    EXPECT_FLOAT_EQ(d.at(2), 7.0f);
-    EXPECT_FLOAT_EQ(d.at(3), 6.0f);
-    EXPECT_FLOAT_EQ(d.at(4), 5.0f);
-    EXPECT_FLOAT_EQ(d.at(5), 4.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(0), 9.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(1), 8.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(2), 7.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(3), 6.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(4), 5.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(5), 4.0f);
 }
 
 TEST(ScalarOpsTest, TensorScalarSubtractionDoesNotModifyInputs) {
     mt::Tensor a({2, 3});
     float b = 10.0f;
 
-    a.at(0) = 1.0f;
+    a.storage_at(0) = 1.0f;
 
     mt::Tensor c = a - b;
 
-    EXPECT_FLOAT_EQ(a.at(0), 1.0f);
+    EXPECT_FLOAT_EQ(a.storage_at(0), 1.0f);
     EXPECT_FLOAT_EQ(b, 10.0f);
-    EXPECT_FLOAT_EQ(c.at(0), -9.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(0), -9.0f);
 }
 
 TEST(ScalarOpsTest, TensorScalarProductionProducesCorrectResult) {
@@ -104,32 +104,32 @@ TEST(ScalarOpsTest, TensorScalarProductionProducesCorrectResult) {
     EXPECT_EQ(d.shape()[1], 3);
 
     // value
-    EXPECT_FLOAT_EQ(c.at(0), 10.0f);
-    EXPECT_FLOAT_EQ(c.at(1), 20.0f);
-    EXPECT_FLOAT_EQ(c.at(2), 30.0f);
-    EXPECT_FLOAT_EQ(c.at(3), 40.0f);
-    EXPECT_FLOAT_EQ(c.at(4), 50.0f);
-    EXPECT_FLOAT_EQ(c.at(5), 60.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(0), 10.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(1), 20.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(2), 30.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(3), 40.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(4), 50.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(5), 60.0f);
 
-    EXPECT_FLOAT_EQ(d.at(0), 10.0f);
-    EXPECT_FLOAT_EQ(d.at(1), 20.0f);
-    EXPECT_FLOAT_EQ(d.at(2), 30.0f);
-    EXPECT_FLOAT_EQ(d.at(3), 40.0f);
-    EXPECT_FLOAT_EQ(d.at(4), 50.0f);
-    EXPECT_FLOAT_EQ(d.at(5), 60.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(0), 10.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(1), 20.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(2), 30.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(3), 40.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(4), 50.0f);
+    EXPECT_FLOAT_EQ(d.storage_at(5), 60.0f);
 }
 
 TEST(ScalarOpsTest, TensorScalarProductionDoesNotModifyInputs) {
     mt::Tensor a({2, 3});
     float b = 10.0f;
 
-    a.at(0) = 1.0f;
+    a.storage_at(0) = 1.0f;
 
     mt::Tensor c = a * b;
 
-    EXPECT_FLOAT_EQ(a.at(0), 1.0f);
+    EXPECT_FLOAT_EQ(a.storage_at(0), 1.0f);
     EXPECT_FLOAT_EQ(b, 10.0f);
-    EXPECT_FLOAT_EQ(c.at(0), 10.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(0), 10.0f);
 }
 
 TEST(ScalarOpsTest, TensorScalarDivisionProducesCorrectResult) {
@@ -146,19 +146,19 @@ TEST(ScalarOpsTest, TensorScalarDivisionProducesCorrectResult) {
     EXPECT_EQ(d.shape()[1], 3);
 
     // value
-    EXPECT_FLOAT_EQ(c.at(0), 10.0f);
-    EXPECT_FLOAT_EQ(c.at(1), 10.0f);
-    EXPECT_FLOAT_EQ(c.at(2), 10.0f);
-    EXPECT_FLOAT_EQ(c.at(3), 10.0f);
-    EXPECT_FLOAT_EQ(c.at(4), 10.0f);
-    EXPECT_FLOAT_EQ(c.at(5), 10.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(0), 10.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(1), 10.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(2), 10.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(3), 10.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(4), 10.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(5), 10.0f);
 
-    EXPECT_FLOAT_EQ(d.at(0), 0.1f);
-    EXPECT_FLOAT_EQ(d.at(1), 0.1f);
-    EXPECT_FLOAT_EQ(d.at(2), 0.1f);
-    EXPECT_FLOAT_EQ(d.at(3), 0.1f);
-    EXPECT_FLOAT_EQ(d.at(4), 0.1f);
-    EXPECT_FLOAT_EQ(d.at(5), 0.1f);
+    EXPECT_FLOAT_EQ(d.storage_at(0), 0.1f);
+    EXPECT_FLOAT_EQ(d.storage_at(1), 0.1f);
+    EXPECT_FLOAT_EQ(d.storage_at(2), 0.1f);
+    EXPECT_FLOAT_EQ(d.storage_at(3), 0.1f);
+    EXPECT_FLOAT_EQ(d.storage_at(4), 0.1f);
+    EXPECT_FLOAT_EQ(d.storage_at(5), 0.1f);
 }
 
 TEST(ScalarOpsTest, TensorScalarDivisionDoesNotModifyInputs) {
@@ -167,9 +167,9 @@ TEST(ScalarOpsTest, TensorScalarDivisionDoesNotModifyInputs) {
 
     mt::Tensor c = b / a;
 
-    EXPECT_FLOAT_EQ(a.at(0), 1.0f);
+    EXPECT_FLOAT_EQ(a.storage_at(0), 1.0f);
     EXPECT_FLOAT_EQ(b, 10.0f);
-    EXPECT_FLOAT_EQ(c.at(0), 10.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(0), 10.0f);
 }
 
 TEST(ScalarOpsTest, TensorScalarDivisionThrowOnZeroDivisor) {

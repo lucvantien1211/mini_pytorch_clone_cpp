@@ -57,6 +57,12 @@ class Tensor {
     Tensor operator-(float scalar) const;
     Tensor operator*(float scalar) const;
     Tensor operator/(float scalar) const;
+
+    // Reduction
+    float sum() const;
+    Tensor sum(size_t dim) const;
+    float mean() const;
+    Tensor mean(size_t dim) const;
 };
 
 // Tensor - scalar operators for: scalar + - * / tensor

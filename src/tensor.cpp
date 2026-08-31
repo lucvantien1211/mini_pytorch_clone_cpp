@@ -280,6 +280,64 @@ Tensor Tensor::operator/(const Tensor& tensor) const {
     return out;
 }
 
+float Tensor::sum() const {
+    float sum = 0;
+
+    IndexIterator iter(shape());
+
+    while (!iter.done()) {
+        sum += this->at(iter.index());
+        iter.next();
+    }
+
+    return sum;
+}
+
+Tensor Tensor::sum(size_t dim) const {
+    if (dim >= ndim()) {
+        throw std::out_of_range("Dimension index out of range");
+    }
+
+    std::vector<size_t> out_shape = remove_dims(shape(), {dim});
+    Tensor out(out_shape);
+
+    IndexIterator iter(out_shape);
+
+    while (!iter.done()) {
+        std::vector<size_t> out_idx = iter.index();
+        float sum = 0;
+
+        for (size_t i = 0; i < shape()[dim]; i++) {
+            std::vector<size_t> input_idx = insert_dim(out_idx, dim, i);
+            sum += this->at(input_idx);
+        }
+
+        out.at(out_idx) = sum;
+
+        iter.next();
+    }
+
+    return out;
+}
+
+float Tensor::mean() const {
+    float cumsum = sum();
+
+    float mean = cumsum / numel();
+
+    return mean;
+}
+
+Tensor Tensor::mean(size_t dim) const {
+    if (dim >= ndim()) {
+        throw std::out_of_range("Dimension index out of range");
+    }
+
+    Tensor out = sum(dim) / shape()[dim];
+
+    return out;
+}
+
 Tensor Tensor::operator+(float scalar) const {
     Tensor out(this->shape());
     for (size_t i = 0; i < this->numel(); i++) {

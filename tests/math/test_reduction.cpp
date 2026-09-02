@@ -89,3 +89,93 @@ TEST(ReductionTest, MeanReductionThrowsOnOutOfRangeDim) {
 
     EXPECT_THROW(a.mean(100), std::out_of_range);
 }
+
+TEST(ReductionTest, ArgmaxReductionProducesCorrectResult) {
+    // Input tensor a: [[1 0], [3, 4], [5, -6]]
+    mt::Tensor a = mt::arange(1.0, 7.0).reshape({3, 2});
+    a.storage_at(1) = 0;
+    a.storage_at(5) = -6;
+
+    mt::Tensor b = a.argmax(0);
+    mt::Tensor c = a.argmax(1);
+
+    // shape
+    EXPECT_EQ(b.shape(), std::vector<size_t>({2}));
+    EXPECT_EQ(c.shape(), std::vector<size_t>({3}));
+
+    // value
+    EXPECT_FLOAT_EQ(b.storage_at(0), 2.0f);
+    EXPECT_FLOAT_EQ(b.storage_at(1), 1.0f);
+
+    EXPECT_FLOAT_EQ(c.storage_at(0), 0.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(1), 1.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(2), 0.0f);
+}
+
+TEST(ReductionTest, ArgmaxReductionOnNonContiguous) {
+    // Input tensor a: [[1 0], [3, 4], [5, -6]]
+    mt::Tensor a = mt::arange(1.0f, 7.0f).reshape({3, 2});
+    a.storage_at(1) = 0;
+    a.storage_at(5) = -6;
+
+    mt::Tensor b = a.transpose(0, 1);
+
+    mt::Tensor out = b.argmax(0);
+
+    EXPECT_EQ(out.shape(), std::vector<size_t>({3}));
+
+    EXPECT_FLOAT_EQ(out.storage_at(0), 0.0f);
+    EXPECT_FLOAT_EQ(out.storage_at(1), 1.0f);
+    EXPECT_FLOAT_EQ(out.storage_at(2), 0.0f);
+}
+
+TEST(ReductionTest, ArgmaxReductionThrowsOnOutOfRangeDim) {
+    mt::Tensor a = mt::arange(1.0f, 7.0f).reshape({3, 2});
+
+    EXPECT_THROW(a.argmax(100), std::out_of_range);
+}
+
+TEST(ReductionTest, MaxReductionProducesCorrectResult) {
+    // Input tensor a: [[1 0], [3, 4], [5, -6]]
+    mt::Tensor a = mt::arange(1.0, 7.0).reshape({3, 2});
+    a.storage_at(1) = 0;
+    a.storage_at(5) = -6;
+
+    mt::Tensor b = a.max(0);
+    mt::Tensor c = a.max(1);
+
+    // shape
+    EXPECT_EQ(b.shape(), std::vector<size_t>({2}));
+    EXPECT_EQ(c.shape(), std::vector<size_t>({3}));
+
+    // value
+    EXPECT_FLOAT_EQ(b.storage_at(0), 5.0f);
+    EXPECT_FLOAT_EQ(b.storage_at(1), 4.0f);
+
+    EXPECT_FLOAT_EQ(c.storage_at(0), 1.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(1), 4.0f);
+    EXPECT_FLOAT_EQ(c.storage_at(2), 5.0f);
+}
+
+TEST(ReductionTest, MaxReductionOnNonContiguous) {
+    // Input tensor a: [[1 0], [3, 4], [5, -6]]
+    mt::Tensor a = mt::arange(1.0f, 7.0f).reshape({3, 2});
+    a.storage_at(1) = 0;
+    a.storage_at(5) = -6;
+
+    mt::Tensor b = a.transpose(0, 1);
+
+    mt::Tensor out = b.max(0);
+
+    EXPECT_EQ(out.shape(), std::vector<size_t>({3}));
+
+    EXPECT_FLOAT_EQ(out.storage_at(0), 1.0f);
+    EXPECT_FLOAT_EQ(out.storage_at(1), 4.0f);
+    EXPECT_FLOAT_EQ(out.storage_at(2), 5.0f);
+}
+
+TEST(ReductionTest, MaxReductionThrowsOnOutOfRangeDim) {
+    mt::Tensor a = mt::arange(1.0f, 7.0f).reshape({3, 2});
+
+    EXPECT_THROW(a.max(100), std::out_of_range);
+}

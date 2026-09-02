@@ -338,6 +338,68 @@ Tensor Tensor::mean(size_t dim) const {
     return out;
 }
 
+Tensor Tensor::argmax(size_t dim) const {
+    if (dim >= ndim()) {
+        throw std::out_of_range("Dimension index out of range");
+    }
+
+    std::vector<size_t> out_shape = remove_dims(shape(), {dim});
+    Tensor out(out_shape);
+
+    IndexIterator iter(out_shape);
+
+    while (!iter.done()) {
+        std::vector<size_t> out_idx = iter.index();
+        size_t max_dim_idx = 0;
+        float max_dim_value = this->at(insert_dim(out_idx, dim, 0));
+
+        for (size_t i = 1; i < shape()[dim]; i++) {
+            std::vector<size_t> input_idx = insert_dim(out_idx, dim, i);
+            float curr_dim_value = this->at(input_idx);
+            if (curr_dim_value > max_dim_value) {
+                max_dim_idx = i;
+                max_dim_value = curr_dim_value;
+            };
+        }
+
+        out.at(out_idx) = max_dim_idx;
+
+        iter.next();
+    }
+
+    return out;
+}
+
+Tensor Tensor::max(size_t dim) const {
+    if (dim >= ndim()) {
+        throw std::out_of_range("Dimension index out of range");
+    }
+
+    std::vector<size_t> out_shape = remove_dims(shape(), {dim});
+    Tensor out(out_shape);
+
+    IndexIterator iter(out_shape);
+
+    while (!iter.done()) {
+        std::vector<size_t> out_idx = iter.index();
+        float max_dim_value = this->at(insert_dim(out_idx, dim, 0));
+
+        for (size_t i = 1; i < shape()[dim]; i++) {
+            std::vector<size_t> input_idx = insert_dim(out_idx, dim, i);
+            float curr_dim_value = this->at(input_idx);
+            if (curr_dim_value > max_dim_value) {
+                max_dim_value = curr_dim_value;
+            };
+        }
+
+        out.at(out_idx) = max_dim_value;
+
+        iter.next();
+    }
+
+    return out;
+}
+
 Tensor Tensor::operator+(float scalar) const {
     Tensor out(this->shape());
     for (size_t i = 0; i < this->numel(); i++) {

@@ -63,6 +63,8 @@ class Tensor {
     Tensor sum(size_t dim) const;
     float mean() const;
     Tensor mean(size_t dim) const;
+    Tensor argmax(size_t dim) const;
+    Tensor max(size_t dim) const;
 };
 
 // Tensor - scalar operators for: scalar + - * / tensor

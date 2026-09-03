@@ -65,6 +65,9 @@ class Tensor {
     Tensor mean(size_t dim) const;
     Tensor argmax(size_t dim) const;
     Tensor max(size_t dim) const;
+
+    // Matmul
+    Tensor matmul(const Tensor& tensor) const;
 };
 
 // Tensor - scalar operators for: scalar + - * / tensor

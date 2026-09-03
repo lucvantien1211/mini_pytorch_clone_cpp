@@ -400,6 +400,40 @@ Tensor Tensor::max(size_t dim) const {
     return out;
 }
 
+Tensor Tensor::matmul(const Tensor& tensor) const {
+    // Naive matmul for 2D-tensor
+    if (this->ndim() != 2 || tensor.ndim() != 2) {
+        throw std::invalid_argument(
+            "Input tensor's shape is invalid, expect both tensors to have ndim = 2");
+    }
+
+    if (this->shape()[1] != tensor.shape()[0]) {
+        throw std::invalid_argument("Input tensor's shape is invalid, expect: (M, P) and (P, N)");
+    }
+
+    std::vector<size_t> out_shape = {this->shape()[0], tensor.shape()[1]};
+    Tensor out(out_shape);
+
+    IndexIterator iter(out_shape);
+
+    while (!iter.done()) {
+        std::vector<size_t> out_idx = iter.index();
+        size_t m = out_idx[0];
+        size_t n = out_idx[1];
+        float sum_prod = 0;
+
+        for (size_t i = 0; i < this->shape()[1]; ++i) {
+            sum_prod += this->at({m, i}) * tensor.at({i, n});
+        }
+
+        out.at(out_idx) = sum_prod;
+
+        iter.next();
+    }
+
+    return out;
+}
+
 Tensor Tensor::operator+(float scalar) const {
     Tensor out(this->shape());
     for (size_t i = 0; i < this->numel(); i++) {

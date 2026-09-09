@@ -1,6 +1,7 @@
 #include "mini_torch/tensor.h"
 
 #include <algorithm>
+#include <cmath>
 #include <stdexcept>
 #include <utility>
 
@@ -427,6 +428,57 @@ Tensor Tensor::matmul(const Tensor& tensor) const {
         }
 
         out.at(out_idx) = sum_prod;
+
+        iter.next();
+    }
+
+    return out;
+}
+
+Tensor Tensor::relu() const {
+    std::vector<size_t> out_shape = shape();
+    Tensor out(out_shape);
+
+    IndexIterator iter(out_shape);
+
+    while (!iter.done()) {
+        std::vector<size_t> idx = iter.index();
+
+        out.at(idx) = std::max(this->at(idx), 0.0f);
+
+        iter.next();
+    }
+
+    return out;
+}
+
+Tensor Tensor::exp() const {
+    std::vector<size_t> out_shape = shape();
+    Tensor out(out_shape);
+
+    IndexIterator iter(out_shape);
+
+    while (!iter.done()) {
+        std::vector<size_t> idx = iter.index();
+
+        out.at(idx) = std::exp(this->at(idx));
+
+        iter.next();
+    }
+
+    return out;
+}
+
+Tensor Tensor::log() const {
+    std::vector<size_t> out_shape = shape();
+    Tensor out(out_shape);
+
+    IndexIterator iter(out_shape);
+
+    while (!iter.done()) {
+        std::vector<size_t> idx = iter.index();
+
+        out.at(idx) = std::log(this->at(idx));
 
         iter.next();
     }

@@ -45,7 +45,7 @@ class Tensor {
     Tensor unsqueeze(size_t dim) const;
     Tensor expand(const std::vector<size_t>& target_shape) const;
 
-    // Operators
+    // Binary Operators
     // Element-wise tensor operators
     Tensor operator+(const Tensor& tensor) const;
     Tensor operator-(const Tensor& tensor) const;
@@ -68,6 +68,11 @@ class Tensor {
 
     // Matmul
     Tensor matmul(const Tensor& tensor) const;
+
+    // Unary Operators
+    Tensor relu() const;
+    Tensor exp() const;
+    Tensor log() const;
 };
 
 // Tensor - scalar operators for: scalar + - * / tensor

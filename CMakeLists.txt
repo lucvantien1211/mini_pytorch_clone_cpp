@@ -51,6 +51,7 @@ add_executable(test_tensor
     tests/math/test_scalar_ops.cpp
     tests/math/test_reduction.cpp
     tests/math/test_matmul.cpp
+    tests/math/test_unary_ops.cpp
 )
 
 target_link_libraries(test_tensor

@@ -487,26 +487,53 @@ Tensor Tensor::log() const {
 }
 
 Tensor Tensor::operator+(float scalar) const {
-    Tensor out(this->shape());
-    for (size_t i = 0; i < this->numel(); i++) {
-        out.storage_at(i) = this->storage_at(i) + scalar;
+    std::vector<size_t> out_shape = shape();
+    Tensor out(out_shape);
+
+    IndexIterator iter(out_shape);
+
+    while (!iter.done()) {
+        std::vector<size_t> idx = iter.index();
+
+        out.at(idx) = this->at(idx) + scalar;
+
+        iter.next();
     }
+
     return out;
 }
 
 Tensor Tensor::operator-(float scalar) const {
-    Tensor out(this->shape());
-    for (size_t i = 0; i < this->numel(); i++) {
-        out.storage_at(i) = this->storage_at(i) - scalar;
+    std::vector<size_t> out_shape = shape();
+    Tensor out(out_shape);
+
+    IndexIterator iter(out_shape);
+
+    while (!iter.done()) {
+        std::vector<size_t> idx = iter.index();
+
+        out.at(idx) = this->at(idx) - scalar;
+
+        iter.next();
     }
+
     return out;
 }
 
 Tensor Tensor::operator*(float scalar) const {
-    Tensor out(this->shape());
-    for (size_t i = 0; i < this->numel(); i++) {
-        out.storage_at(i) = this->storage_at(i) * scalar;
+    std::vector<size_t> out_shape = shape();
+    Tensor out(out_shape);
+
+    IndexIterator iter(out_shape);
+
+    while (!iter.done()) {
+        std::vector<size_t> idx = iter.index();
+
+        out.at(idx) = this->at(idx) * scalar;
+
+        iter.next();
     }
+
     return out;
 }
 
@@ -514,45 +541,92 @@ Tensor Tensor::operator/(float scalar) const {
     if (scalar == 0.0f) {
         throw std::runtime_error("Cannot divide by 0");
     }
-    Tensor out(this->shape());
-    for (size_t i = 0; i < this->numel(); i++) {
-        out.storage_at(i) = this->storage_at(i) / scalar;
+
+    std::vector<size_t> out_shape = shape();
+    Tensor out(out_shape);
+
+    IndexIterator iter(out_shape);
+
+    while (!iter.done()) {
+        std::vector<size_t> idx = iter.index();
+
+        out.at(idx) = this->at(idx) / scalar;
+
+        iter.next();
     }
+
     return out;
 }
 
 Tensor operator+(float scalar, const Tensor& tensor) {
-    Tensor out(tensor.shape());
-    for (size_t i = 0; i < tensor.numel(); i++) {
-        out.storage_at(i) = scalar + tensor.storage_at(i);
+    std::vector<size_t> out_shape = tensor.shape();
+    Tensor out(out_shape);
+
+    IndexIterator iter(out_shape);
+
+    while (!iter.done()) {
+        std::vector<size_t> idx = iter.index();
+
+        out.at(idx) = scalar + tensor.at(idx);
+
+        iter.next();
     }
+
     return out;
 }
 
 Tensor operator-(float scalar, const Tensor& tensor) {
-    Tensor out(tensor.shape());
-    for (size_t i = 0; i < tensor.numel(); ++i) {
-        out.storage_at(i) = scalar - tensor.storage_at(i);
+    std::vector<size_t> out_shape = tensor.shape();
+    Tensor out(out_shape);
+
+    IndexIterator iter(out_shape);
+
+    while (!iter.done()) {
+        std::vector<size_t> idx = iter.index();
+
+        out.at(idx) = scalar - tensor.at(idx);
+
+        iter.next();
     }
+
     return out;
 }
 
 Tensor operator*(float scalar, const Tensor& tensor) {
-    Tensor out(tensor.shape());
-    for (size_t i = 0; i < tensor.numel(); i++) {
-        out.storage_at(i) = scalar * tensor.storage_at(i);
+    std::vector<size_t> out_shape = tensor.shape();
+    Tensor out(out_shape);
+
+    IndexIterator iter(out_shape);
+
+    while (!iter.done()) {
+        std::vector<size_t> idx = iter.index();
+
+        out.at(idx) = scalar * tensor.at(idx);
+
+        iter.next();
     }
+
     return out;
 }
 
 Tensor operator/(float scalar, const Tensor& tensor) {
-    Tensor out(tensor.shape());
-    for (size_t i = 0; i < tensor.numel(); i++) {
-        if (tensor.storage_at(i) == 0.0f) {
+    std::vector<size_t> out_shape = tensor.shape();
+    Tensor out(out_shape);
+
+    IndexIterator iter(out_shape);
+
+    while (!iter.done()) {
+        std::vector<size_t> idx = iter.index();
+
+        if (tensor.at(idx) == 0.0f) {
             throw std::runtime_error("Cannot divide by 0");
         }
-        out.storage_at(i) = scalar / tensor.storage_at(i);
+
+        out.at(idx) = scalar / tensor.at(idx);
+
+        iter.next();
     }
+
     return out;
 }
 

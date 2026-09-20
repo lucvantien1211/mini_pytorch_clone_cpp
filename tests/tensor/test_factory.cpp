@@ -76,3 +76,15 @@ TEST(FactoryTest, ArangeFactoryFunctionReturnsEmptyTensor) {
     EXPECT_EQ(a.numel(), 0);
     EXPECT_EQ(b.numel(), 0);
 }
+
+TEST(FactoryTest, UniformFactoryFunctionReturnsCorrectResult) {
+    mt::Tensor a = mt::uniform({2, 3}, -5, 5);
+
+    // shape
+    EXPECT_EQ(a.shape(), std::vector<size_t>({2, 3}));
+
+    // value
+    for (size_t i = 0; i < a.numel(); i++) {
+        EXPECT_TRUE(a.storage_at(i) >= -5 && a.storage_at(i) <= 5);
+    }
+}

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <stdexcept>
 
+#include "mini_torch/factory.h"
 #include "mini_torch/tensor.h"
 #include "mini_torch/utils.h"
 
@@ -135,6 +136,13 @@ int main() {
     std::cout << "]\n";
 
     std::cout << "Numel: " << f.numel() << "\n\n";
+
+    // =====================
+    // Random Uniform Tensor
+    // =====================
+    mt::manual_seed(42);
+    mt::Tensor u = mt::uniform({2, 3}, -5, 5);
+    u.print();
 
     return 0;
 }

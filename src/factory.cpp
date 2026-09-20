@@ -1,7 +1,9 @@
 #include <cmath>
+#include <random>
 #include <stdexcept>
 
 #include "mini_torch/tensor.h"
+#include "mini_torch/utils.h"
 
 namespace mt {
 Tensor zeros(const std::vector<size_t>& shape) { return Tensor(shape); }
@@ -37,5 +39,17 @@ Tensor arange(float start, float end, float step = 1.0f) {
 
         return out;
     }
+}
+
+Tensor uniform(const std::vector<size_t>& shape, float low, float high) {
+    Tensor out(shape);
+
+    std::uniform_real_distribution<float> dist(low, high);
+
+    for (size_t i = 0; i < out.numel(); ++i) {
+        out.storage_at(i) = dist(global_rng());
+    }
+
+    return out;
 }
 }  // namespace mt

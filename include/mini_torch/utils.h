@@ -2,9 +2,19 @@
 
 #include <iostream>
 #include <numeric>
+#include <random>
 #include <stdexcept>
 #include <unordered_set>
 #include <vector>
+
+namespace mt {
+inline std::mt19937& global_rng() {
+    static std::mt19937 rng(42);
+    return rng;
+};
+
+inline void manual_seed(uint32_t seed) { global_rng().seed(seed); };
+}  // namespace mt
 
 template <typename T>
 void print_vector(const std::vector<T>& v, char sep = ',') {

@@ -8,4 +8,5 @@ namespace mt {
 Tensor zeros(const std::vector<size_t>& shape);
 Tensor ones(const std::vector<size_t>& shape);
 Tensor arange(float start, float end, float step = 1.0f);
-}
+Tensor uniform(const std::vector<size_t>& shape, float low, float high);
+}  // namespace mt

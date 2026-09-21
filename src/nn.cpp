@@ -12,7 +12,7 @@ namespace mt {
 namespace nn {
 Parameter::Parameter() = default;
 
-explicit Parameter::Parameter(Tensor data) : data_(std::move(data)) {}
+Parameter::Parameter(Tensor data) : data_(std::move(data)) {}
 
 Tensor& Parameter::data() { return data_; }
 
@@ -37,8 +37,7 @@ Tensor Linear::forward(const Tensor& x) {
 
 std::vector<Parameter*> Linear::parameters() { return {&weight_, &bias_}; }
 
-explicit Sequential::Sequential(std::vector<std::shared_ptr<Module>> layers)
-    : layers_(std::move(layers)) {}
+Sequential::Sequential(std::vector<std::shared_ptr<Module>> layers) : layers_(std::move(layers)) {}
 
 Tensor Sequential::forward(const Tensor& x) {
     Tensor out = x;

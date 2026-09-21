@@ -21,6 +21,7 @@ add_library(mini_torch STATIC
     src/tensor_impl.cpp
     src/factory.cpp
     src/tensor_iterator.cpp
+    src/nn.cpp
 )
 
 # =========================================
@@ -52,6 +53,8 @@ add_executable(test_tensor
     tests/math/test_reduction.cpp
     tests/math/test_matmul.cpp
     tests/math/test_unary_ops.cpp
+
+    tests/nn/test_nn.cpp
 )
 
 target_link_libraries(test_tensor

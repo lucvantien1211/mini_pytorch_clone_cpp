@@ -5,6 +5,7 @@
 
 #include "mini_torch/factory.h"
 #include "mini_torch/tensor.h"
+#include "mini_torch/utils.h"
 
 TEST(FactoryTest, ZerosFactoryFunctionProducesCorrectResult) {
     mt::Tensor t = mt::zeros({2, 3});
@@ -86,5 +87,19 @@ TEST(FactoryTest, UniformFactoryFunctionReturnsCorrectResult) {
     // value
     for (size_t i = 0; i < a.numel(); i++) {
         EXPECT_TRUE(a.storage_at(i) >= -5 && a.storage_at(i) <= 5);
+    }
+}
+
+TEST(FactoryTest, ManualSeedDeterministic) {
+    mt::manual_seed(42);
+
+    mt::Tensor a = mt::uniform({100}, -1.0f, 1.0f);
+
+    mt::manual_seed(42);
+
+    mt::Tensor b = mt::uniform({100}, -1.0f, 1.0f);
+
+    for (size_t i = 0; i < a.numel(); ++i) {
+        EXPECT_FLOAT_EQ(a.storage_at(i), b.storage_at(i));
     }
 }

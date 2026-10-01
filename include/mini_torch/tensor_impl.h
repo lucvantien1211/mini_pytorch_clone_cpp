@@ -3,6 +3,8 @@
 #include <memory>
 #include <vector>
 
+#include "mini_torch/autograd.h"
+
 namespace mt {
 // Actual data storage for tensor
 class Storage {
@@ -21,16 +23,23 @@ class TensorImpl {
 
     size_t storage_offset_ = 0;
 
-    void initialize_from_shape(const std::vector<size_t>& shape);
+    bool requires_grad_ = false;
+
+    bool is_leaf_ = true;
+
+    std::shared_ptr<mt::Node> grad_fn_;
+
+    void initialize_from_shape(const std::vector<size_t>& shape, bool requires_grad);
 
    public:
     // Constructors
     TensorImpl();
 
-    explicit TensorImpl(const std::vector<size_t>& shape);
+    explicit TensorImpl(const std::vector<size_t>& shape, bool requires_grad = false);
 
     TensorImpl(std::shared_ptr<Storage> storage, const std::vector<size_t>& shape,
-               const std::vector<size_t>& stride, size_t storage_offset = 0);
+               const std::vector<size_t>& stride, size_t storage_offset = 0,
+               bool requires_grad = false);
 
     // Metadata
     size_t numel() const;
@@ -44,6 +53,16 @@ class TensorImpl {
     std::shared_ptr<Storage> storage() const;
 
     bool is_contiguous() const;
+
+    bool requires_grad() const;
+
+    bool is_leaf() const;
+
+    std::shared_ptr<mt::Node> grad_fn() const;
+
+    void set_requires_grad(bool requires_grad);
+
+    void set_grad_fn(std::shared_ptr<Node> grad_fn);
 
     // Utility
     static size_t numel(const std::vector<size_t>& shape);

@@ -4,18 +4,41 @@
 
 namespace mt {
 // Constructor
-TensorImpl::TensorImpl() { initialize_from_shape({}); }
+TensorImpl::TensorImpl() { initialize_from_shape({}, false); }
 
-TensorImpl::TensorImpl(const std::vector<size_t>& shape) { initialize_from_shape(shape); }
+TensorImpl::TensorImpl(const std::vector<size_t>& shape, bool requires_grad) {
+    initialize_from_shape(shape, requires_grad);
+}
 
 TensorImpl::TensorImpl(std::shared_ptr<Storage> storage, const std::vector<size_t>& shape,
-                       const std::vector<size_t>& stride, size_t storage_offset)
-    : storage_(storage), shape_(shape), stride_(stride), storage_offset_(storage_offset) {}
+                       const std::vector<size_t>& stride, size_t storage_offset, bool requires_grad)
+    : storage_(storage),
+      shape_(shape),
+      stride_(stride),
+      storage_offset_(storage_offset),
+      requires_grad_(requires_grad) {
+    is_leaf_ = true;
+    grad_fn_ = nullptr;
+}
 
-void TensorImpl::initialize_from_shape(const std::vector<size_t>& shape) {
+void TensorImpl::initialize_from_shape(const std::vector<size_t>& shape, bool requires_grad) {
     storage_ = std::make_shared<Storage>();
+
     shape_ = shape;
     stride_ = compute_stride(shape);
+
+    requires_grad_ = requires_grad;
+
+    is_leaf_ = true;
+
+    grad_fn_ = nullptr;
+}
+
+void TensorImpl::set_requires_grad(bool requires_grad) { requires_grad_ = requires_grad; }
+
+void TensorImpl::set_grad_fn(std::shared_ptr<Node> grad_fn) {
+    grad_fn_ = std::move(grad_fn);
+    is_leaf_ = (grad_fn_ == nullptr);
 }
 
 // Metadata
@@ -32,6 +55,12 @@ size_t TensorImpl::storage_offset() const { return storage_offset_; }
 std::shared_ptr<Storage> TensorImpl::storage() const { return storage_; }
 
 bool TensorImpl::is_contiguous() const { return TensorImpl::compute_stride(shape_) == stride_; }
+
+bool TensorImpl::requires_grad() const { return requires_grad_; }
+
+bool TensorImpl::is_leaf() const { return is_leaf_; }
+
+std::shared_ptr<mt::Node> TensorImpl::grad_fn() const { return grad_fn_; }
 
 // Utility
 size_t TensorImpl::numel(const std::vector<size_t>& shape) {

@@ -55,6 +55,7 @@ add_executable(test_tensor
     tests/math/test_unary_ops.cpp
 
     tests/nn/test_nn.cpp
+    tests/nn/test_autograd.cpp
 )
 
 target_link_libraries(test_tensor

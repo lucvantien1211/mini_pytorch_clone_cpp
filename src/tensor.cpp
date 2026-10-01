@@ -2,9 +2,12 @@
 
 #include <algorithm>
 #include <cmath>
+#include <memory>
 #include <stdexcept>
 #include <utility>
 
+#include "mini_torch/autograd.h"
+#include "mini_torch/autograd_nodes.h"
 #include "mini_torch/tensor_iterator.h"
 #include "mini_torch/utils.h"
 
@@ -12,7 +15,8 @@ namespace mt {
 // Constructor
 Tensor::Tensor() : impl_(std::make_shared<TensorImpl>()) {}
 
-Tensor::Tensor(const std::vector<size_t>& shape) : impl_(std::make_shared<TensorImpl>(shape)) {
+Tensor::Tensor(const std::vector<size_t>& shape, bool requires_grad)
+    : impl_(std::make_shared<TensorImpl>(shape, requires_grad)) {
     if (shape.empty()) {
         throw std::invalid_argument("Tensor's shape can not be empty");
     }
@@ -32,6 +36,12 @@ const std::vector<size_t>& Tensor::stride() const { return impl_->stride(); }
 const std::vector<size_t>& Tensor::shape() const { return impl_->shape(); }
 
 size_t Tensor::storage_offset() const { return impl_->storage_offset(); }
+
+bool Tensor::requires_grad() const { return impl_->requires_grad(); }
+
+bool Tensor::is_leaf() const { return impl_->is_leaf(); }
+
+std::shared_ptr<mt::Node> Tensor::grad_fn() const { return impl_->grad_fn(); }
 
 // Indexing
 const float& Tensor::storage_at(size_t idx) const {
@@ -87,7 +97,7 @@ Tensor Tensor::reshape(const std::vector<size_t>& new_shape) const {
     std::vector<size_t> new_stride = TensorImpl::compute_stride(new_shape);
 
     auto new_impl = std::make_shared<TensorImpl>(impl_->storage(), new_shape, new_stride,
-                                                 impl_->storage_offset());
+                                                 impl_->storage_offset(), impl_->requires_grad());
 
     return Tensor(new_impl);
 }
@@ -117,7 +127,7 @@ Tensor Tensor::permute(const std::vector<size_t>& dims) const {
         new_stride[i] = stride()[dims[i]];
     }
     auto new_impl = std::make_shared<TensorImpl>(impl_->storage(), new_shape, new_stride,
-                                                 impl_->storage_offset());
+                                                 impl_->storage_offset(), impl_->requires_grad());
 
     return Tensor(new_impl);
 }
@@ -137,7 +147,7 @@ Tensor Tensor::squeeze() const {
     std::vector<size_t> new_stride = remove_dims(stride(), singleton_dims);
 
     auto new_impl = std::make_shared<TensorImpl>(impl_->storage(), new_shape, new_stride,
-                                                 impl_->storage_offset());
+                                                 impl_->storage_offset(), impl_->requires_grad());
 
     return Tensor(new_impl);
 }
@@ -153,7 +163,7 @@ Tensor Tensor::squeeze(size_t dim) const {
     std::vector<size_t> new_shape = remove_dims(shape(), {dim});
     std::vector<size_t> new_stride = remove_dims(stride(), {dim});
     auto new_impl = std::make_shared<TensorImpl>(impl_->storage(), new_shape, new_stride,
-                                                 impl_->storage_offset());
+                                                 impl_->storage_offset(), impl_->requires_grad());
 
     return Tensor(new_impl);
 }
@@ -170,7 +180,7 @@ Tensor Tensor::unsqueeze(size_t dim) const {
     std::vector<size_t> new_stride = insert_dim(stride(), dim, stride_to_add);
 
     auto new_impl = std::make_shared<TensorImpl>(impl_->storage(), new_shape, new_stride,
-                                                 impl_->storage_offset());
+                                                 impl_->storage_offset(), impl_->requires_grad());
 
     return Tensor(new_impl);
 }
@@ -199,7 +209,7 @@ Tensor Tensor::expand(const std::vector<size_t>& target_shape) const {
     }
 
     auto new_impl = std::make_shared<TensorImpl>(impl_->storage(), target_shape, target_stride,
-                                                 impl_->storage_offset());
+                                                 impl_->storage_offset(), impl_->requires_grad());
 
     return Tensor(new_impl);
 }
@@ -207,8 +217,9 @@ Tensor Tensor::expand(const std::vector<size_t>& target_shape) const {
 // Operators
 Tensor Tensor::operator+(const Tensor& tensor) const {
     std::vector<size_t> out_shape = broadcast_shape(this->shape(), tensor.shape());
+    bool requires_grad = this->requires_grad() || tensor.requires_grad();
 
-    Tensor out(out_shape);
+    Tensor out(out_shape, requires_grad);
 
     TensorIterator iter(out, std::vector<const Tensor*>({this, &tensor}));
 
@@ -218,6 +229,10 @@ Tensor Tensor::operator+(const Tensor& tensor) const {
         out.storage_at(offsets[0]) = this->storage_at(offsets[1]) + tensor.storage_at(offsets[2]);
 
         iter.next();
+    }
+
+    if (requires_grad) {
+        out.impl_->set_grad_fn(std::make_shared<AddBackwardNode>(*this, tensor));
     }
 
     return out;

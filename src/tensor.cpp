@@ -20,8 +20,6 @@ Tensor::Tensor(const std::vector<size_t>& shape, bool requires_grad)
     if (shape.empty()) {
         throw std::invalid_argument("Tensor's shape can not be empty");
     }
-
-    impl_->storage()->data_.resize(impl_->numel(), 0.0f);
 }
 
 Tensor::Tensor(std::shared_ptr<TensorImpl> impl) : impl_(std::move(impl)) {}
@@ -37,11 +35,45 @@ const std::vector<size_t>& Tensor::shape() const { return impl_->shape(); }
 
 size_t Tensor::storage_offset() const { return impl_->storage_offset(); }
 
+// Gradient and Autograd
 bool Tensor::requires_grad() const { return impl_->requires_grad(); }
 
 bool Tensor::is_leaf() const { return impl_->is_leaf(); }
 
 std::shared_ptr<mt::Node> Tensor::grad_fn() const { return impl_->grad_fn(); }
+
+bool Tensor::has_grad() const { return impl_->has_grad(); }
+
+Tensor Tensor::grad() const {
+    if (!impl_->has_grad()) {
+        throw std::runtime_error("Tensor has no gradient");
+    }
+
+    return Tensor(impl_->grad());
+}
+
+void Tensor::accumulate_grad(const Tensor& incoming) {
+    if (shape() != incoming.shape()) {
+        throw std::runtime_error("Gradient must have same shape as tensor");
+    }
+
+    if (!has_grad()) {
+        auto grad = std::make_shared<TensorImpl>(incoming.shape(), false);
+        impl_->set_grad(grad);
+    }
+
+    IndexIterator iter(shape());
+
+    while (!iter.done()) {
+        std::vector<size_t> idx = iter.index();
+
+        grad().at(idx) += incoming.at(idx);
+
+        iter.next();
+    }
+}
+
+void Tensor::zero_grad() { impl_->set_grad(nullptr); }
 
 // Indexing
 const float& Tensor::storage_at(size_t idx) const {

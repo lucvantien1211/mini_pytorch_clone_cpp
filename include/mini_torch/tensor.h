@@ -23,9 +23,15 @@ class Tensor {
     const std::vector<size_t>& stride() const;
     const std::vector<size_t>& shape() const;
     size_t storage_offset() const;
+
+    // Gradient and Autograd
     bool requires_grad() const;
     bool is_leaf() const;
     std::shared_ptr<mt::Node> grad_fn() const;
+    bool has_grad() const;
+    Tensor grad() const;
+    void accumulate_grad(const Tensor& incoming);
+    void zero_grad();
 
     // Indexing
     const float& storage_at(size_t idx) const;

@@ -29,6 +29,8 @@ class TensorImpl {
 
     std::shared_ptr<mt::Node> grad_fn_;
 
+    std::shared_ptr<TensorImpl> grad_;
+
     void initialize_from_shape(const std::vector<size_t>& shape, bool requires_grad);
 
    public:
@@ -54,15 +56,22 @@ class TensorImpl {
 
     bool is_contiguous() const;
 
+    // Gradient and Autograd
     bool requires_grad() const;
 
     bool is_leaf() const;
 
     std::shared_ptr<mt::Node> grad_fn() const;
 
+    std::shared_ptr<TensorImpl> grad() const;
+
     void set_requires_grad(bool requires_grad);
 
     void set_grad_fn(std::shared_ptr<Node> grad_fn);
+
+    bool has_grad() const;
+
+    void set_grad(std::shared_ptr<TensorImpl> grad);
 
     // Utility
     static size_t numel(const std::vector<size_t>& shape);

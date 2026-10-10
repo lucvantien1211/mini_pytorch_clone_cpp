@@ -35,6 +35,14 @@ const std::vector<size_t>& Tensor::shape() const { return impl_->shape(); }
 
 size_t Tensor::storage_offset() const { return impl_->storage_offset(); }
 
+float Tensor::item() const {
+    if (numel() != 1) {
+        throw std::runtime_error("item() only works on tensors with one element");
+    }
+
+    return this->storage_at(0);
+}
+
 // Gradient and Autograd
 bool Tensor::requires_grad() const { return impl_->requires_grad(); }
 
@@ -328,17 +336,17 @@ Tensor Tensor::operator/(const Tensor& tensor) const {
     return out;
 }
 
-float Tensor::sum() const {
-    float sum = 0;
+Tensor Tensor::sum() const {
+    Tensor out({1});
 
     IndexIterator iter(shape());
 
     while (!iter.done()) {
-        sum += this->at(iter.index());
+        out.storage_at(0) += this->at(iter.index());
         iter.next();
     }
 
-    return sum;
+    return out;
 }
 
 Tensor Tensor::sum(size_t dim) const {
@@ -368,12 +376,13 @@ Tensor Tensor::sum(size_t dim) const {
     return out;
 }
 
-float Tensor::mean() const {
-    float cumsum = sum();
+Tensor Tensor::mean() const {
+    Tensor out({1});
+    float cumsum = sum().item();
 
-    float mean = cumsum / numel();
+    out.storage_at(0) = cumsum / numel();
 
-    return mean;
+    return out;
 }
 
 Tensor Tensor::mean(size_t dim) const {

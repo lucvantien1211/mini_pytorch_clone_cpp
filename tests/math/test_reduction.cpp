@@ -11,7 +11,7 @@ TEST(ReductionTest, SumReductionProducesCorrectResult) {
 
     mt::Tensor b = a.sum(0);
     mt::Tensor c = a.sum(1);
-    float total = a.sum();
+    float total = a.sum().item();
 
     // shape
     EXPECT_EQ(b.shape(), std::vector<size_t>({2}));
@@ -53,7 +53,7 @@ TEST(ReductionTest, MeanReductionProducesCorrectResult) {
 
     mt::Tensor b = a.mean(0);
     mt::Tensor c = a.mean(1);
-    float total_mean = a.mean();
+    float total_mean = a.mean().item();
 
     // shape
     EXPECT_EQ(b.shape(), std::vector<size_t>({2}));

@@ -23,6 +23,7 @@ class Tensor {
     const std::vector<size_t>& stride() const;
     const std::vector<size_t>& shape() const;
     size_t storage_offset() const;
+    float item() const;
 
     // Gradient and Autograd
     bool requires_grad() const;
@@ -68,9 +69,9 @@ class Tensor {
     Tensor operator/(float scalar) const;
 
     // Reduction
-    float sum() const;
+    Tensor sum() const;
     Tensor sum(size_t dim) const;
-    float mean() const;
+    Tensor mean() const;
     Tensor mean(size_t dim) const;
     Tensor argmax(size_t dim) const;
     Tensor max(size_t dim) const;

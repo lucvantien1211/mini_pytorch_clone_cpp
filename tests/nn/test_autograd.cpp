@@ -130,3 +130,68 @@ TEST(AutoGradTest, GradientDoesNotBuildGraph) {
     EXPECT_TRUE(x.grad().is_leaf());
     EXPECT_EQ(x.grad().grad_fn(), nullptr);
 }
+
+TEST(AutoGradTest, BackwardRequiresGrad) {
+    mt::Tensor x({1});
+
+    EXPECT_THROW(x.backward(), std::runtime_error);
+}
+
+TEST(AutoGradTest, BackwardRequiresSingleElement) {
+    mt::Tensor x({2}, true);
+
+    EXPECT_THROW(x.backward(), std::runtime_error);
+}
+
+TEST(AddBackwardTest, PropagatesGradientToBothInputs) {
+    mt::Tensor x({1}, true);
+    mt::Tensor y({1}, true);
+
+    x.storage_at(0) = 2.0f;
+    y.storage_at(0) = 3.0f;
+
+    mt::Tensor z = x + y;
+    z.backward();
+
+    ASSERT_TRUE(x.has_grad());
+    ASSERT_TRUE(y.has_grad());
+
+    EXPECT_FLOAT_EQ(x.grad().item(), 1.0f);
+    EXPECT_FLOAT_EQ(y.grad().item(), 1.0f);
+}
+
+TEST(AddBackwardTest, PropagatesOnlyToInputsRequiringGrad) {
+    mt::Tensor x({1}, true);
+    mt::Tensor y({1}, false);
+
+    x.storage_at(0) = 2.0f;
+    y.storage_at(0) = 3.0f;
+
+    mt::Tensor z = x + y;
+    z.backward();
+
+    ASSERT_TRUE(x.has_grad());
+    EXPECT_FLOAT_EQ(x.grad().item(), 1.0f);
+
+    EXPECT_FALSE(y.has_grad());
+}
+
+TEST(AddBackwardTest, AccumulatesGradientFromMultiplePaths) {
+    mt::Tensor x({1}, true);
+    mt::Tensor y({1}, true);
+
+    x.storage_at(0) = 2.0f;
+    y.storage_at(0) = 3.0f;
+
+    mt::Tensor a = x + y;
+    mt::Tensor b = x + y;
+    mt::Tensor loss = a + b;
+
+    loss.backward();
+
+    ASSERT_TRUE(x.has_grad());
+    ASSERT_TRUE(y.has_grad());
+
+    EXPECT_FLOAT_EQ(x.grad().item(), 2.0f);
+    EXPECT_FLOAT_EQ(y.grad().item(), 2.0f);
+}

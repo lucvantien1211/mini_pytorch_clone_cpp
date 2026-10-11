@@ -22,6 +22,7 @@ add_library(mini_torch STATIC
     src/factory.cpp
     src/tensor_iterator.cpp
     src/nn.cpp
+    src/autograd_nodes.cpp
 )
 
 # =========================================

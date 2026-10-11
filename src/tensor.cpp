@@ -81,6 +81,39 @@ void Tensor::accumulate_grad(const Tensor& incoming) {
     }
 }
 
+void Tensor::backward() {
+    if (numel() != 1) {
+        throw std::runtime_error("backward() requires a tensor with one element");
+    }
+
+    if (!requires_grad()) {
+        throw std::runtime_error("backward() called on a tensor that does not require gradients");
+    }
+
+    Tensor grad_output({1});
+    grad_output.storage_at(0) = 1.0f;
+
+    backward_propagate(grad_output);
+}
+
+void Tensor::backward_propagate(const Tensor& grad_output) {
+    if (!requires_grad()) {
+        return;
+    }
+
+    if (shape() != grad_output.shape()) {
+        throw std::runtime_error("Gradient shape must match tensor shape");
+    }
+
+    auto node = grad_fn();
+
+    if (node != nullptr) {
+        node->backward(grad_output);
+    } else {
+        accumulate_grad(grad_output);
+    }
+}
+
 void Tensor::zero_grad() { impl_->set_grad(nullptr); }
 
 // Indexing

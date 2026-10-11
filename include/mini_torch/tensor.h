@@ -33,6 +33,8 @@ class Tensor {
     Tensor grad() const;
     void accumulate_grad(const Tensor& incoming);
     void zero_grad();
+    void backward();
+    void backward_propagate(const Tensor& grad_output);
 
     // Indexing
     const float& storage_at(size_t idx) const;

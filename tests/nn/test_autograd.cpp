@@ -3,6 +3,8 @@
 #include <stdexcept>
 #include <vector>
 
+#include "mini_torch/autograd_nodes.h"
+#include "mini_torch/factory.h"
 #include "mini_torch/tensor.h"
 
 TEST(AutoGradTest, AddBackwardTest) {
@@ -194,4 +196,122 @@ TEST(AddBackwardTest, AccumulatesGradientFromMultiplePaths) {
 
     EXPECT_FLOAT_EQ(x.grad().item(), 2.0f);
     EXPECT_FLOAT_EQ(y.grad().item(), 2.0f);
+}
+
+TEST(ReduceToShapeTest, SameShape) {
+    mt::Tensor grad = mt::arange(1.0f, 7.0f).reshape({2, 3});
+
+    mt::Tensor out = mt::reduce_to_shape(grad, {2, 3});
+
+    EXPECT_EQ(out.shape(), (std::vector<size_t>{2, 3}));
+
+    EXPECT_FLOAT_EQ(out.at({0, 0}), 1.0f);
+    EXPECT_FLOAT_EQ(out.at({0, 2}), 3.0f);
+    EXPECT_FLOAT_EQ(out.at({1, 0}), 4.0f);
+    EXPECT_FLOAT_EQ(out.at({1, 2}), 6.0f);
+}
+
+TEST(ReduceToShapeTest, ReduceLastDimension) {
+    mt::Tensor grad = mt::arange(1.0f, 7.0f).reshape({2, 3});
+
+    mt::Tensor out = mt::reduce_to_shape(grad, {2, 1});
+
+    EXPECT_EQ(out.shape(), (std::vector<size_t>{2, 1}));
+
+    EXPECT_FLOAT_EQ(out.at({0, 0}), 6.0f);
+    EXPECT_FLOAT_EQ(out.at({1, 0}), 15.0f);
+}
+
+TEST(ReduceToShapeTest, ReduceFirstDimension) {
+    mt::Tensor grad = mt::arange(1.0f, 7.0f).reshape({2, 3});
+
+    mt::Tensor out = mt::reduce_to_shape(grad, {1, 3});
+
+    EXPECT_EQ(out.shape(), (std::vector<size_t>{1, 3}));
+
+    EXPECT_FLOAT_EQ(out.at({0, 0}), 5.0f);
+    EXPECT_FLOAT_EQ(out.at({0, 1}), 7.0f);
+    EXPECT_FLOAT_EQ(out.at({0, 2}), 9.0f);
+}
+
+TEST(ReduceToShapeTest, ReduceLeadingDimension) {
+    mt::Tensor grad = mt::arange(1.0f, 25.0f).reshape({2, 3, 4});
+
+    mt::Tensor out = mt::reduce_to_shape(grad, {3, 4});
+
+    EXPECT_EQ(out.shape(), (std::vector<size_t>{3, 4}));
+
+    // grad[0, 0, 0] + grad[1, 0, 0] = 1 + 13
+    EXPECT_FLOAT_EQ(out.at({0, 0}), 14.0f);
+
+    // grad[0, 2, 3] + grad[1, 2, 3] = 12 + 24
+    EXPECT_FLOAT_EQ(out.at({2, 3}), 36.0f);
+}
+
+TEST(ReduceToShapeTest, ThrowsForIncompatibleShape) {
+    mt::Tensor grad = mt::ones({2, 3});
+
+    EXPECT_THROW(mt::reduce_to_shape(grad, {2, 4}), std::runtime_error);
+}
+
+TEST(AddBackwardTest, PropagatesGradOnBroadcastAddition) {
+    mt::Tensor a = mt::ones({2, 1}, true);
+    mt::Tensor b = mt::ones({1, 3}, true);
+    mt::Tensor c = a + b;
+
+    mt::Tensor grad_output = mt::arange(1.0f, 7.0f).reshape({2, 3});
+
+    c.backward_propagate(grad_output);
+
+    EXPECT_EQ(a.grad().shape(), (std::vector<size_t>{2, 1}));
+
+    EXPECT_FLOAT_EQ(a.grad().at({0, 0}), 6.0f);
+    EXPECT_FLOAT_EQ(a.grad().at({1, 0}), 15.0f);
+
+    EXPECT_EQ(b.grad().shape(), (std::vector<size_t>{1, 3}));
+
+    EXPECT_FLOAT_EQ(b.grad().at({0, 0}), 5.0f);
+    EXPECT_FLOAT_EQ(b.grad().at({0, 1}), 7.0f);
+    EXPECT_FLOAT_EQ(b.grad().at({0, 2}), 9.0f);
+}
+
+TEST(AddBackwardTest, PropagatesGradOnNonBroadcastAddition) {
+    mt::Tensor a = mt::ones({2, 2}, true);
+    mt::Tensor b = mt::uniform({2, 2}, -5, 5, true);
+    mt::Tensor c = a + b;
+
+    mt::Tensor grad_output = mt::arange(1.0f, 5.0f).reshape({2, 2});
+
+    c.backward_propagate(grad_output);
+
+    EXPECT_EQ(a.grad().shape(), (std::vector<size_t>{2, 2}));
+
+    EXPECT_FLOAT_EQ(a.grad().at({0, 0}), 1.0f);
+    EXPECT_FLOAT_EQ(a.grad().at({0, 1}), 2.0f);
+    EXPECT_FLOAT_EQ(a.grad().at({1, 0}), 3.0f);
+    EXPECT_FLOAT_EQ(a.grad().at({1, 1}), 4.0f);
+
+    EXPECT_EQ(b.grad().shape(), (std::vector<size_t>{2, 2}));
+
+    EXPECT_FLOAT_EQ(b.grad().at({0, 0}), 1.0f);
+    EXPECT_FLOAT_EQ(b.grad().at({0, 1}), 2.0f);
+    EXPECT_FLOAT_EQ(b.grad().at({1, 0}), 3.0f);
+    EXPECT_FLOAT_EQ(b.grad().at({1, 1}), 4.0f);
+}
+
+TEST(AddBackwardTest, BroadcastPropagatesToInputsRequiringGrad) {
+    mt::Tensor a = mt::ones({2, 1}, true);
+    mt::Tensor b = mt::ones({1, 3}, false);
+    mt::Tensor c = a + b;
+
+    mt::Tensor grad_output = mt::arange(1.0f, 7.0f).reshape({2, 3});
+
+    c.backward_propagate(grad_output);
+
+    EXPECT_EQ(a.grad().shape(), (std::vector<size_t>{2, 1}));
+
+    EXPECT_FLOAT_EQ(a.grad().at({0, 0}), 6.0f);
+    EXPECT_FLOAT_EQ(a.grad().at({1, 0}), 15.0f);
+
+    EXPECT_FALSE(b.has_grad());
 }

@@ -1,9 +1,12 @@
 #pragma once
+#include <vector>
 
 #include "mini_torch/autograd.h"
 #include "mini_torch/tensor.h"
 
 namespace mt {
+Tensor reduce_to_shape(const Tensor& grad, const std::vector<size_t>& target_shape);
+
 class AddBackwardNode : public mt::Node {
    private:
     mt::Tensor lhs_;

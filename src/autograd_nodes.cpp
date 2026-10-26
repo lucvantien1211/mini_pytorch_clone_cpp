@@ -70,4 +70,90 @@ void AddBackwardNode::backward(const Tensor& grad_output) {
         rhs_.backward_propagate(grad_rhs);
     }
 }
+
+SubBackwardNode::SubBackwardNode(const mt::Tensor& lhs, const mt::Tensor& rhs)
+    : lhs_(lhs), rhs_(rhs) {};
+
+const Tensor& SubBackwardNode::lhs() const { return lhs_; }
+
+const Tensor& SubBackwardNode::rhs() const { return rhs_; }
+
+std::string SubBackwardNode::name() const { return "SubBackward"; }
+
+void SubBackwardNode::backward(const Tensor& grad_output) {
+    if (lhs_.requires_grad()) {
+        Tensor grad_lhs = reduce_to_shape(grad_output, lhs_.shape());
+        lhs_.backward_propagate(grad_lhs);
+    }
+
+    if (rhs_.requires_grad()) {
+        Tensor grad_rhs = -1.0f * reduce_to_shape(grad_output, rhs_.shape());
+        rhs_.backward_propagate(grad_rhs);
+    }
+}
+
+MulBackwardNode::MulBackwardNode(const mt::Tensor& lhs, const mt::Tensor& rhs)
+    : lhs_(lhs), rhs_(rhs) {};
+
+const Tensor& MulBackwardNode::lhs() const { return lhs_; }
+
+const Tensor& MulBackwardNode::rhs() const { return rhs_; }
+
+std::string MulBackwardNode::name() const { return "MulBackward"; }
+
+void MulBackwardNode::backward(const Tensor& grad_output) {
+    if (lhs_.requires_grad()) {
+        Tensor grad_lhs = reduce_to_shape(grad_output * rhs_, lhs_.shape());
+        lhs_.backward_propagate(grad_lhs);
+    }
+
+    if (rhs_.requires_grad()) {
+        Tensor grad_rhs = reduce_to_shape(grad_output * lhs_, rhs_.shape());
+        rhs_.backward_propagate(grad_rhs);
+    }
+}
+
+DivBackwardNode::DivBackwardNode(const mt::Tensor& lhs, const mt::Tensor& rhs)
+    : lhs_(lhs), rhs_(rhs) {};
+
+const Tensor& DivBackwardNode::lhs() const { return lhs_; }
+
+const Tensor& DivBackwardNode::rhs() const { return rhs_; }
+
+std::string DivBackwardNode::name() const { return "DivBackward"; }
+
+void DivBackwardNode::backward(const Tensor& grad_output) {
+    if (lhs_.requires_grad()) {
+        Tensor grad_lhs = reduce_to_shape(grad_output / rhs_, lhs_.shape());
+        lhs_.backward_propagate(grad_lhs);
+    }
+
+    if (rhs_.requires_grad()) {
+        Tensor grad_rhs =
+            -1.0f * reduce_to_shape(grad_output * (lhs_ / (rhs_ * rhs_)), rhs_.shape());
+        rhs_.backward_propagate(grad_rhs);
+    }
+}
+
+ReluBackwardNode::ReluBackwardNode(const Tensor& input) : input_(input) {};
+
+const Tensor& ReluBackwardNode::input() const { return input_; }
+
+std::string ReluBackwardNode::name() const { return "ReLUBackward"; }
+
+void ReluBackwardNode::backward(const Tensor& grad_output) {
+    if (input_.requires_grad()) {
+        Tensor grad_input(input_.shape(), false);
+
+        IndexIterator iter(input_.shape());
+        while (!iter.done()) {
+            std::vector<size_t> index = iter.index();
+            grad_input.at(index) = input_.at(index) > 0.0f ? grad_output.at(index) : 0.0f;
+
+            iter.next();
+        }
+
+        input_.backward_propagate(grad_input);
+    }
+}
 }  // namespace mt

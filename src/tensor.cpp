@@ -97,6 +97,8 @@ void Tensor::backward() {
 }
 
 void Tensor::backward_propagate(const Tensor& grad_output) {
+    NoGradGuard guard;
+
     if (!requires_grad()) {
         return;
     }
@@ -290,7 +292,7 @@ Tensor Tensor::expand(const std::vector<size_t>& target_shape) const {
 // Operators
 Tensor Tensor::operator+(const Tensor& tensor) const {
     std::vector<size_t> out_shape = broadcast_shape(this->shape(), tensor.shape());
-    bool requires_grad = this->requires_grad() || tensor.requires_grad();
+    bool requires_grad = is_grad_enabled() && (this->requires_grad() || tensor.requires_grad());
 
     Tensor out(out_shape, requires_grad);
 
@@ -313,8 +315,9 @@ Tensor Tensor::operator+(const Tensor& tensor) const {
 
 Tensor Tensor::operator-(const Tensor& tensor) const {
     std::vector<size_t> out_shape = broadcast_shape(this->shape(), tensor.shape());
+    bool requires_grad = is_grad_enabled() && (this->requires_grad() || tensor.requires_grad());
 
-    Tensor out(out_shape);
+    Tensor out(out_shape, requires_grad);
 
     TensorIterator iter(out, std::vector<const Tensor*>({this, &tensor}));
 
@@ -326,13 +329,18 @@ Tensor Tensor::operator-(const Tensor& tensor) const {
         iter.next();
     }
 
+    if (requires_grad) {
+        out.impl_->set_grad_fn(std::make_shared<SubBackwardNode>(*this, tensor));
+    }
+
     return out;
 }
 
 Tensor Tensor::operator*(const Tensor& tensor) const {
     std::vector<size_t> out_shape = broadcast_shape(this->shape(), tensor.shape());
+    bool requires_grad = is_grad_enabled() && (this->requires_grad() || tensor.requires_grad());
 
-    Tensor out(out_shape);
+    Tensor out(out_shape, requires_grad);
 
     TensorIterator iter(out, std::vector<const Tensor*>({this, &tensor}));
 
@@ -344,13 +352,18 @@ Tensor Tensor::operator*(const Tensor& tensor) const {
         iter.next();
     }
 
+    if (requires_grad) {
+        out.impl_->set_grad_fn(std::make_shared<MulBackwardNode>(*this, tensor));
+    }
+
     return out;
 }
 
 Tensor Tensor::operator/(const Tensor& tensor) const {
     std::vector<size_t> out_shape = broadcast_shape(this->shape(), tensor.shape());
+    bool requires_grad = is_grad_enabled() && (this->requires_grad() || tensor.requires_grad());
 
-    Tensor out(out_shape);
+    Tensor out(out_shape, requires_grad);
 
     TensorIterator iter(out, std::vector<const Tensor*>({this, &tensor}));
 
@@ -364,6 +377,10 @@ Tensor Tensor::operator/(const Tensor& tensor) const {
         out.storage_at(offsets[0]) = this->storage_at(offsets[1]) / tensor.storage_at(offsets[2]);
 
         iter.next();
+    }
+
+    if (requires_grad) {
+        out.impl_->set_grad_fn(std::make_shared<DivBackwardNode>(*this, tensor));
     }
 
     return out;
@@ -526,7 +543,7 @@ Tensor Tensor::matmul(const Tensor& tensor) const {
 
 Tensor Tensor::relu() const {
     std::vector<size_t> out_shape = shape();
-    Tensor out(out_shape);
+    Tensor out(out_shape, requires_grad());
 
     IndexIterator iter(out_shape);
 
@@ -536,6 +553,10 @@ Tensor Tensor::relu() const {
         out.at(idx) = std::max(this->at(idx), 0.0f);
 
         iter.next();
+    }
+
+    if (requires_grad()) {
+        out.impl_->set_grad_fn(std::make_shared<ReluBackwardNode>(*this));
     }
 
     return out;

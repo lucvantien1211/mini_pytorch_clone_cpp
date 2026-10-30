@@ -50,6 +50,7 @@ Tensor reduce_to_shape(const Tensor& grad, const std::vector<size_t>& target_sha
     return out;
 }
 
+// AddBackwardNode
 AddBackwardNode::AddBackwardNode(const mt::Tensor& lhs, const mt::Tensor& rhs)
     : lhs_(lhs), rhs_(rhs) {};
 
@@ -71,6 +72,7 @@ void AddBackwardNode::backward(const Tensor& grad_output) {
     }
 }
 
+// SubBackwardNode
 SubBackwardNode::SubBackwardNode(const mt::Tensor& lhs, const mt::Tensor& rhs)
     : lhs_(lhs), rhs_(rhs) {};
 
@@ -92,6 +94,7 @@ void SubBackwardNode::backward(const Tensor& grad_output) {
     }
 }
 
+// MulBackwardNode
 MulBackwardNode::MulBackwardNode(const mt::Tensor& lhs, const mt::Tensor& rhs)
     : lhs_(lhs), rhs_(rhs) {};
 
@@ -113,6 +116,7 @@ void MulBackwardNode::backward(const Tensor& grad_output) {
     }
 }
 
+// DivBackwardNode
 DivBackwardNode::DivBackwardNode(const mt::Tensor& lhs, const mt::Tensor& rhs)
     : lhs_(lhs), rhs_(rhs) {};
 
@@ -135,6 +139,29 @@ void DivBackwardNode::backward(const Tensor& grad_output) {
     }
 }
 
+// MatmulBackwardNode
+MatmulBackwardNode::MatmulBackwardNode(const mt::Tensor& lhs, const mt::Tensor& rhs)
+    : lhs_(lhs), rhs_(rhs) {};
+
+const Tensor& MatmulBackwardNode::lhs() const { return lhs_; }
+
+const Tensor& MatmulBackwardNode::rhs() const { return rhs_; }
+
+std::string MatmulBackwardNode::name() const { return "MatmulBackward"; }
+
+void MatmulBackwardNode::backward(const Tensor& grad_output) {
+    if (lhs_.requires_grad()) {
+        Tensor grad_lhs = grad_output.matmul(rhs_.transpose(0, 1));
+        lhs_.backward_propagate(grad_lhs);
+    }
+
+    if (rhs_.requires_grad()) {
+        Tensor grad_rhs = lhs_.transpose(0, 1).matmul(grad_output);
+        rhs_.backward_propagate(grad_rhs);
+    }
+}
+
+// ReLuBackwardNode
 ReluBackwardNode::ReluBackwardNode(const Tensor& input) : input_(input) {};
 
 const Tensor& ReluBackwardNode::input() const { return input_; }

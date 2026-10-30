@@ -519,7 +519,8 @@ Tensor Tensor::matmul(const Tensor& tensor) const {
     }
 
     std::vector<size_t> out_shape = {this->shape()[0], tensor.shape()[1]};
-    Tensor out(out_shape);
+    bool requires_grad = is_grad_enabled() && (this->requires_grad() || tensor.requires_grad());
+    Tensor out(out_shape, requires_grad);
 
     IndexIterator iter(out_shape);
 
@@ -536,6 +537,10 @@ Tensor Tensor::matmul(const Tensor& tensor) const {
         out.at(out_idx) = sum_prod;
 
         iter.next();
+    }
+
+    if (requires_grad) {
+        out.impl_->set_grad_fn(std::make_shared<MatmulBackwardNode>(*this, tensor));
     }
 
     return out;

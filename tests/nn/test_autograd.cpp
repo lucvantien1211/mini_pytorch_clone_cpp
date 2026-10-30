@@ -459,6 +459,145 @@ TEST(DivBackwardTest, ReducesGradientAfterElementwiseDivision) {
 }
 
 // -----------------------------------------------------------------------------
+// MatmulBackwardNode
+// -----------------------------------------------------------------------------
+TEST(MatmulBackwardTest, ComputesGradientForBothInputs) {
+    mt::Tensor a({2, 3}, true);
+    mt::Tensor b({3, 2}, true);
+
+    set_values(a, {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f});
+
+    set_values(b, {7.0f, 8.0f, 9.0f, 10.0f, 11.0f, 12.0f});
+
+    mt::Tensor out = a.matmul(b);
+
+    mt::Tensor grad = mt::Tensor({2, 2}, false);
+    set_values(grad, {1.0f, 2.0f, 3.0f, 4.0f});
+
+    out.backward_propagate(grad);
+
+    // dA = grad @ B^T
+    expect_shape(a.grad(), {2, 3});
+    expect_values(a.grad(), {23.0f, 29.0f, 35.0f, 53.0f, 67.0f, 81.0f});
+
+    // dB = A^T @ grad
+    expect_shape(b.grad(), {3, 2});
+    expect_values(b.grad(), {13.0f, 18.0f, 17.0f, 24.0f, 21.0f, 30.0f});
+}
+
+TEST(MatmulBackwardTest, DoesNotPropagateToInputWithoutGrad) {
+    mt::Tensor a({2, 2}, true);
+    mt::Tensor b({2, 2}, false);
+
+    set_values(a, {1.0f, 2.0f, 3.0f, 4.0f});
+
+    set_values(b, {1.0f, 2.0f, 3.0f, 4.0f});
+
+    mt::Tensor out = a.matmul(b);
+
+    mt::Tensor grad = mt::ones({2, 2});
+    out.backward_propagate(grad);
+
+    // dA = grad @ B^T
+    expect_values(a.grad(), {3.0f, 7.0f, 3.0f, 7.0f});
+
+    EXPECT_FALSE(b.has_grad());
+}
+
+TEST(MatmulBackwardTest, HandlesNonSquareMatrices) {
+    mt::Tensor a({2, 3}, true);
+    mt::Tensor b({3, 4}, true);
+
+    set_values(a, {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f});
+
+    set_values(b, {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f, 12.0f});
+
+    mt::Tensor out = a.matmul(b);
+
+    mt::Tensor grad = mt::ones({2, 4});
+    out.backward_propagate(grad);
+
+    // dA = grad @ B^T
+    expect_shape(a.grad(), {2, 3});
+    expect_values(a.grad(), {10.0f, 26.0f, 42.0f, 10.0f, 26.0f, 42.0f});
+
+    // dB = A^T @ grad
+    expect_shape(b.grad(), {3, 4});
+    expect_values(b.grad(),
+                  {5.0f, 5.0f, 5.0f, 5.0f, 7.0f, 7.0f, 7.0f, 7.0f, 9.0f, 9.0f, 9.0f, 9.0f});
+}
+
+TEST(MatmulBackwardTest, AccumulatesGradientAcrossMultiplePaths) {
+    mt::Tensor a({2, 2}, true);
+    mt::Tensor b({2, 2}, true);
+    mt::Tensor c({2, 2}, true);
+
+    set_values(a, {1.0f, 2.0f, 3.0f, 4.0f});
+
+    set_values(b, {1.0f, 2.0f, 3.0f, 4.0f});
+
+    set_values(c, {5.0f, 6.0f, 7.0f, 8.0f});
+
+    mt::Tensor out = a.matmul(b) + a.matmul(c);
+
+    mt::Tensor grad = mt::ones({2, 2});
+    out.backward_propagate(grad);
+
+    // dA = grad @ B^T + grad @ C^T
+    expect_values(a.grad(), {14.0f, 22.0f, 14.0f, 22.0f});
+
+    // dB = A^T @ grad
+    expect_values(b.grad(), {4.0f, 4.0f, 6.0f, 6.0f});
+
+    // dC = A^T @ grad
+    expect_values(c.grad(), {4.0f, 4.0f, 6.0f, 6.0f});
+}
+
+TEST(MatmulBackwardTest, GradientComputationDoesNotBuildGraph) {
+    mt::Tensor a({2, 2}, true);
+    mt::Tensor b({2, 2}, true);
+
+    set_values(a, {1.0f, 2.0f, 3.0f, 4.0f});
+
+    set_values(b, {5.0f, 6.0f, 7.0f, 8.0f});
+
+    mt::Tensor out = a.matmul(b);
+
+    mt::Tensor grad = mt::ones({2, 2});
+    out.backward_propagate(grad);
+
+    mt::Tensor grad_a = a.grad();
+    mt::Tensor grad_b = b.grad();
+
+    EXPECT_FALSE(grad_a.requires_grad());
+    EXPECT_FALSE(grad_b.requires_grad());
+
+    EXPECT_EQ(grad_a.grad_fn(), nullptr);
+    EXPECT_EQ(grad_b.grad_fn(), nullptr);
+
+    EXPECT_TRUE(mt::is_grad_enabled());
+}
+
+TEST(MatmulBackwardTest, RejectsInvalidGradientShape) {
+    mt::Tensor a({2, 3}, true);
+    mt::Tensor b({3, 2}, true);
+
+    set_values(a, {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f});
+
+    set_values(b, {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f});
+
+    mt::Tensor out = a.matmul(b);  // Shape: {2, 2}
+
+    // Same number of elements, but incorrect shape.
+    mt::Tensor invalid_grad = mt::ones({4});
+
+    EXPECT_THROW(out.backward_propagate(invalid_grad), std::runtime_error);
+
+    EXPECT_FALSE(a.has_grad());
+    EXPECT_FALSE(b.has_grad());
+}
+
+// -----------------------------------------------------------------------------
 // NoGradGuard / gradient-recording state
 // -----------------------------------------------------------------------------
 

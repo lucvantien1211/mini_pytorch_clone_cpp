@@ -75,6 +75,23 @@ class DivBackwardNode : public mt::Node {
     void backward(const Tensor& grad_output) override;
 };
 
+class MatmulBackwardNode : public mt::Node {
+   private:
+    mt::Tensor lhs_;
+    mt::Tensor rhs_;
+
+   public:
+    MatmulBackwardNode(const mt::Tensor& lhs, const mt::Tensor& rhs);
+
+    const Tensor& lhs() const;
+
+    const Tensor& rhs() const;
+
+    std::string name() const override;
+
+    void backward(const Tensor& grad_output) override;
+};
+
 class ReluBackwardNode : public Node {
    private:
     Tensor input_;

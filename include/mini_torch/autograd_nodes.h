@@ -92,6 +92,23 @@ class MatmulBackwardNode : public mt::Node {
     void backward(const Tensor& grad_output) override;
 };
 
+class SumBackwardNode : public mt::Node {
+   private:
+    mt::Tensor input_;
+    size_t dim_;
+    bool is_all_dim_reduction_;
+
+   public:
+    SumBackwardNode(const mt::Tensor& input);
+    SumBackwardNode(const mt::Tensor& input, size_t dim);
+
+    const Tensor& input() const;
+
+    std::string name() const override;
+
+    void backward(const Tensor& grad_output) override;
+};
+
 class ReluBackwardNode : public Node {
    private:
     Tensor input_;

@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "mini_torch/autograd.h"
+#include "mini_torch/factory.h"
 #include "mini_torch/tensor.h"
 #include "mini_torch/tensor_iterator.h"
 
@@ -158,6 +159,40 @@ void MatmulBackwardNode::backward(const Tensor& grad_output) {
     if (rhs_.requires_grad()) {
         Tensor grad_rhs = lhs_.transpose(0, 1).matmul(grad_output);
         rhs_.backward_propagate(grad_rhs);
+    }
+}
+
+// SumBackwardNode
+SumBackwardNode::SumBackwardNode(const mt::Tensor& input) : input_(input) {
+    is_all_dim_reduction_ = true;
+}
+
+SumBackwardNode::SumBackwardNode(const mt::Tensor& input, size_t dim) : input_(input), dim_(dim) {
+    is_all_dim_reduction_ = false;
+}
+
+const Tensor& SumBackwardNode::input() const { return input_; }
+
+std::string SumBackwardNode::name() const { return "SumBackward"; }
+
+void SumBackwardNode::backward(const Tensor& grad_output) {
+    if (input_.requires_grad()) {
+        Tensor grad_input(input_.shape(), false);
+
+        if (is_all_dim_reduction_) {
+            float g = grad_output.item();
+            IndexIterator iter(input_.shape());
+
+            while (!iter.done()) {
+                std::vector<size_t> index = iter.index();
+                grad_input.at(index) = g;
+                iter.next();
+            }
+        } else {
+            grad_input = grad_output.unsqueeze(dim_).expand(input_.shape());
+        }
+
+        input_.backward_propagate(grad_input);
     }
 }
 

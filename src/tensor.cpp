@@ -262,24 +262,21 @@ Tensor Tensor::unsqueeze(size_t dim) const {
 
 Tensor Tensor::expand(const std::vector<size_t>& target_shape) const {
     size_t out_ndim = target_shape.size();
-    if (out_ndim < ndim()) {
-        throw std::invalid_argument(
-            "Number of output dimension must larger than or equal to the original");
+    if (out_ndim != ndim()) {
+        throw std::invalid_argument("Number of output dimension must equal to the original");
     }
 
-    std::vector<size_t> padded_shape = left_pad_dim(shape(), out_ndim, 1);
-    std::vector<size_t> padded_stride = left_pad_dim(stride(), out_ndim, 0);
     std::vector<size_t> target_stride(out_ndim);
 
     for (size_t i = 0; i < out_ndim; ++i) {
-        if (padded_shape[i] == target_shape[i]) {
+        if (shape()[i] == target_shape[i]) {
             // keep original stride
-            target_stride[i] = padded_stride[i];
-        } else if (padded_shape[i] == 1) {
-            // broadcasted dim -> stride = 0
+            target_stride[i] = stride()[i];
+        } else if (shape()[i] == 1) {
+            // singleton dim that need expansion -> stride = 0
             target_stride[i] = 0;
         } else {
-            throw std::runtime_error("Cannot broadcast original tensor to target shape");
+            throw std::invalid_argument("Cannot expand original tensor to target shape");
         }
     }
 
@@ -387,13 +384,18 @@ Tensor Tensor::operator/(const Tensor& tensor) const {
 }
 
 Tensor Tensor::sum() const {
-    Tensor out({1});
+    bool requires_grad = is_grad_enabled() && (this->requires_grad());
+    Tensor out({1}, requires_grad);
 
     IndexIterator iter(shape());
 
     while (!iter.done()) {
         out.storage_at(0) += this->at(iter.index());
         iter.next();
+    }
+
+    if (requires_grad) {
+        out.impl_->set_grad_fn(std::make_shared<SumBackwardNode>(*this));
     }
 
     return out;
@@ -405,7 +407,8 @@ Tensor Tensor::sum(size_t dim) const {
     }
 
     std::vector<size_t> out_shape = remove_dims(shape(), {dim});
-    Tensor out(out_shape);
+    bool requires_grad = is_grad_enabled() && (this->requires_grad());
+    Tensor out(out_shape, requires_grad);
 
     IndexIterator iter(out_shape);
 
@@ -421,6 +424,10 @@ Tensor Tensor::sum(size_t dim) const {
         out.at(out_idx) = sum;
 
         iter.next();
+    }
+
+    if (requires_grad) {
+        out.impl_->set_grad_fn(std::make_shared<SumBackwardNode>(*this, dim));
     }
 
     return out;

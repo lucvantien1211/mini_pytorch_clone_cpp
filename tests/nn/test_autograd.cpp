@@ -686,3 +686,109 @@ TEST(ReluBackwardTest, DoesNotBuildGraphWhenInputDoesNotRequireGrad) {
     EXPECT_TRUE(out.is_leaf());
     EXPECT_EQ(out.grad_fn(), nullptr);
 }
+
+TEST(SumBackwardTest, SumsAllElements) {
+    mt::Tensor x({2, 3}, true);
+
+    set_values(x, {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f});
+
+    mt::Tensor out = x.sum();
+
+    EXPECT_EQ(out.shape(), (std::vector<size_t>{1}));
+
+    mt::Tensor grad = mt::Tensor({1}, false);
+    set_values(grad, {2.0f});
+
+    out.backward_propagate(grad);
+
+    expect_shape(x.grad(), {2, 3});
+    expect_values(x.grad(), {2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f});
+}
+
+TEST(SumBackwardTest, SumsAlongDimension0) {
+    mt::Tensor x({2, 3}, true);
+
+    set_values(x, {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f});
+
+    mt::Tensor out = x.sum(0);
+
+    expect_shape(out, {3});
+
+    mt::Tensor grad = mt::Tensor({3}, false);
+    set_values(grad, {1.0f, 2.0f, 3.0f});
+
+    out.backward_propagate(grad);
+
+    expect_shape(x.grad(), {2, 3});
+    expect_values(x.grad(), {1.0f, 2.0f, 3.0f, 1.0f, 2.0f, 3.0f});
+}
+
+TEST(SumBackwardTest, SumsAlongDimension1) {
+    mt::Tensor x({2, 3}, true);
+
+    set_values(x, {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f});
+
+    mt::Tensor out = x.sum(1);
+
+    expect_shape(out, {2});
+
+    mt::Tensor grad = mt::Tensor({2}, false);
+    set_values(grad, {2.0f, 3.0f});
+
+    out.backward_propagate(grad);
+
+    expect_shape(x.grad(), {2, 3});
+    expect_values(x.grad(), {2.0f, 2.0f, 2.0f, 3.0f, 3.0f, 3.0f});
+}
+
+TEST(SumBackwardTest, HandlesNonContiguousInput) {
+    mt::Tensor base({3, 2}, true);
+
+    set_values(base, {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f});
+
+    mt::Tensor x = base.transpose(0, 1);
+
+    EXPECT_FALSE(x.is_contiguous());
+
+    expect_shape(x, {2, 3});
+
+    mt::Tensor out = x.sum(1);
+
+    mt::Tensor grad = mt::Tensor({2}, false);
+    set_values(grad, {2.0f, 3.0f});
+
+    out.backward_propagate(grad);
+
+    expect_shape(x.grad(), {2, 3});
+    expect_values(x.grad(), {2.0f, 2.0f, 2.0f, 3.0f, 3.0f, 3.0f});
+}
+
+TEST(SumBackwardTest, DoesNotPropagateToInputWithoutGrad) {
+    mt::Tensor x({2, 3}, false);
+
+    set_values(x, {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f});
+
+    mt::Tensor out = x.sum();
+
+    mt::Tensor grad = mt::ones({1});
+    out.backward_propagate(grad);
+
+    EXPECT_FALSE(x.has_grad());
+}
+
+TEST(SumBackwardTest, GradientComputationDoesNotBuildGraph) {
+    mt::Tensor x({2, 3}, true);
+
+    set_values(x, {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f});
+
+    mt::Tensor out = x.sum(1);
+
+    mt::Tensor grad = mt::ones({2});
+    out.backward_propagate(grad);
+
+    mt::Tensor grad_x = x.grad();
+
+    EXPECT_FALSE(grad_x.requires_grad());
+    EXPECT_EQ(grad_x.grad_fn(), nullptr);
+    EXPECT_TRUE(mt::is_grad_enabled());
+}

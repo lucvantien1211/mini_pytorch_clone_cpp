@@ -256,3 +256,30 @@ TEST(ViewTest, UnsqueezeThrowsOnOutOfRangeIndex) {
     mt::Tensor t({2, 3});
     EXPECT_THROW(t.unsqueeze(3), std::out_of_range);
 }
+
+TEST(ViewTest, ExpandsMultipleSingletonDimensions) {
+    mt::Tensor x({1, 1, 3});
+
+    for (size_t i = 0; i < 3; ++i) {
+        x.storage_at(i) = static_cast<float>(i + 1);
+    }
+
+    mt::Tensor y = x.expand({2, 4, 3});
+
+    EXPECT_EQ(y.shape(), std::vector<size_t>({2, 4, 3}));
+    EXPECT_EQ(y.stride(), (std::vector<size_t>{0, 0, 1}));
+
+    for (size_t i = 0; i < 2; ++i) {
+        for (size_t j = 0; j < 4; ++j) {
+            for (size_t k = 0; k < 3; ++k) {
+                EXPECT_FLOAT_EQ(y.at({i, j, k}), static_cast<float>(k + 1));
+            }
+        }
+    }
+}
+
+TEST(ViewTest, RejectsExpansionOfNonSingletonDimension) {
+    mt::Tensor x({2, 3});
+
+    EXPECT_THROW(x.expand({4, 3}), std::invalid_argument);
+}
